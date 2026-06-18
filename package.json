@@ -1,0 +1,19 @@
+{
+  "name": "antes-de-pujar-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "generate:pdf": "node ./scripts/generate-pdf.mjs"
+  },
+  "dependencies": {
+    "next": "^16.0.0",
+    "pdf-lib": "^1.17.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  }
+}
