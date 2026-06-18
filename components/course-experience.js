@@ -1,15 +1,27 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import { CaseStudyCard } from "@/components/case-study-card";
+import { CourseAccessGate } from "@/components/course-access-gate";
 import {
   auto1ChecklistItems,
+  caseStudies,
   courseModules,
+  getModulePath,
   pickupChecklistItems
 } from "@/lib/course-content";
 import {
+  hasStoredCourseAccess,
+  isValidCoursePassword,
+  loadCompletedModules,
+  loadStoredMap,
+  storeCourseAccess,
+  toggleCompletedModule
+} from "@/lib/course-state";
+import {
   BRAND_NAME,
-  COURSE_PASSWORD,
   PDF_DOWNLOAD_PATH,
   PRINT_ROUTE,
   STORAGE_KEYS,
@@ -44,11 +56,6 @@ const defaultLimits = {
   current: ""
 };
 
-function percentage(done, total) {
-  if (!total) return 0;
-  return Math.round((done / total) * 100);
-}
-
 function asCurrency(value) {
   return new Intl.NumberFormat("es-ES", {
     style: "currency",
@@ -60,25 +67,6 @@ function asCurrency(value) {
 function safeParse(value) {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function loadStoredMap(key, items) {
-  if (typeof window === "undefined") {
-    return {};
-  }
-
-  const emptyState = Object.fromEntries(items.map((item) => [item, false]));
-  const raw = window.localStorage.getItem(key);
-
-  if (!raw) {
-    return emptyState;
-  }
-
-  try {
-    return { ...emptyState, ...JSON.parse(raw) };
-  } catch {
-    return emptyState;
-  }
 }
 
 function ChecklistTool({ title, subtitle, items, state, onToggle, statusText }) {
@@ -142,23 +130,17 @@ export function CourseExperience() {
   const [limits, setLimits] = useState(defaultLimits);
 
   useEffect(() => {
-    const unlocked = window.localStorage.getItem(STORAGE_KEYS.access) === "1";
-    const storedModules = window.localStorage.getItem(STORAGE_KEYS.completedModules);
+    const unlocked = hasStoredCourseAccess();
     const storedTool = window.localStorage.getItem(STORAGE_KEYS.activeTool);
-    let parsedModules = [];
-
-    if (storedModules) {
-      try {
-        parsedModules = JSON.parse(storedModules);
-      } catch {
-        parsedModules = [];
-      }
-    }
 
     setHasAccess(unlocked);
-    setAuto1Checklist(loadStoredMap(STORAGE_KEYS.auto1Checklist, auto1ChecklistItems));
-    setPickupChecklist(loadStoredMap(STORAGE_KEYS.pickupChecklist, pickupChecklistItems));
-    setCompletedModules(Array.isArray(parsedModules) ? parsedModules : []);
+    setAuto1Checklist(
+      loadStoredMap(STORAGE_KEYS.auto1Checklist, auto1ChecklistItems)
+    );
+    setPickupChecklist(
+      loadStoredMap(STORAGE_KEYS.pickupChecklist, pickupChecklistItems)
+    );
+    setCompletedModules(loadCompletedModules());
     setActiveTool(storedTool || "checklist-auto1");
     setReady(true);
   }, []);
@@ -189,6 +171,7 @@ export function CourseExperience() {
   const auto1Done = auto1ChecklistItems.filter((item) => auto1Checklist[item]).length;
   const pickupDone = pickupChecklistItems.filter((item) => pickupChecklist[item]).length;
   const moduleDone = completedModules.length;
+  const auto1Percent = Math.round((auto1Done / auto1ChecklistItems.length) * 100);
 
   const overallProgress = useMemo(() => {
     const totalUnits = courseModules.length + 2;
@@ -216,12 +199,12 @@ export function CourseExperience() {
 
     if (riskInputs.indicator === "S") {
       score += 1;
-      notes.push("La S no confirma movimiento del vehiculo.");
+      notes.push("La S no confirma movimiento del vehículo.");
     }
 
     if (riskInputs.indicator === "sin-letra") {
       score += 2;
-      notes.push("Sin letra suele implicar menos certeza y mas riesgo.");
+      notes.push("Sin letra suele implicar menos certeza y más riesgo.");
     }
 
     if (riskInputs.airbag === "si") {
@@ -231,17 +214,17 @@ export function CourseExperience() {
 
     if (riskInputs.usaDocs === "si") {
       score += 1;
-      notes.push("La documentacion USA o sospechosa exige mucha mas revision.");
+      notes.push("La documentación USA o sospechosa exige mucha más revisión.");
     }
 
     if (riskInputs.rust === "si") {
       score += 2;
-      notes.push("El oxido fuerte puede esconder una reparacion mucho mayor.");
+      notes.push("El óxido fuerte puede esconder una reparación mucho mayor.");
     }
 
     if (riskInputs.mechanical === "si") {
       score += 2;
-      notes.push("Dano mecanico declarado: mejor no improvisar.");
+      notes.push("Daño mecánico declarado: mejor no improvisar.");
     }
 
     if (riskInputs.suspiciousPrice === "si") {
@@ -261,7 +244,7 @@ export function CourseExperience() {
 
     if (riskInputs.coc === "si") {
       score = Math.max(0, score - 1);
-      notes.push("El COC ayuda en homologacion, pero no borra otros riesgos.");
+      notes.push("El COC ayuda en homologación, pero no borra otros riesgos.");
     }
 
     if (score <= 2) {
@@ -286,7 +269,7 @@ export function CourseExperience() {
       return {
         score,
         tone: "high",
-        label: "Riesgo alto, mejor evitar si estas empezando",
+        label: "Riesgo alto, mejor evitar si estás empezando",
         notes
       };
     }
@@ -311,8 +294,8 @@ export function CourseExperience() {
     if (current <= optimum) {
       return {
         tone: "low",
-        title: "Zona comoda",
-        text: "La puja sigue dentro del precio optimo."
+        title: "Zona cómoda",
+        text: "La puja sigue dentro del precio óptimo."
       };
     }
 
@@ -320,20 +303,20 @@ export function CourseExperience() {
       return {
         tone: "medium",
         title: "Zona emocional",
-        text: "Solo seguir si lo tienes muy claro. El maximo esta para protegerte, no para alcanzarlo siempre."
+        text: "Solo seguir si lo tienes muy claro. El máximo está para protegerte, no para alcanzarlo siempre."
       };
     }
 
     return {
       tone: "critical",
-      title: "No pujar mas",
-      text: "Has pasado tu limite absoluto. Sal de la puja."
+      title: "No pujar más",
+      text: "Has pasado tu límite absoluto. Sal de la puja."
     };
   }, [limits]);
 
   function unlockCourse() {
-    if (password.trim().toUpperCase() === COURSE_PASSWORD) {
-      window.localStorage.setItem(STORAGE_KEYS.access, "1");
+    if (isValidCoursePassword(password)) {
+      storeCourseAccess();
       setHasAccess(true);
       setAccessError("");
       return;
@@ -342,16 +325,12 @@ export function CourseExperience() {
     setAccessError("Clave incorrecta. Revisa el mensaje de acceso.");
   }
 
-  function toggleChecklistItem(setter, currentState, item) {
+  function toggleChecklistItem(setter, item) {
     setter((previous) => ({ ...previous, [item]: !previous[item] }));
   }
 
   function toggleModule(id) {
-    setCompletedModules((current) =>
-      current.includes(id)
-        ? current.filter((item) => item !== id)
-        : [...current, id]
-    );
+    setCompletedModules((current) => toggleCompletedModule(id, current));
   }
 
   if (!ready) {
@@ -360,34 +339,17 @@ export function CourseExperience() {
 
   if (!hasAccess) {
     return (
-      <main className="site-shell gate-shell">
-        <div className="gate-card">
-          <p className="pill pill-amber">{BRAND_NAME}</p>
-          <h1>Area privada del curso</h1>
-          <p>
-            Introduce la clave simple para acceder al MVP fundador de Antes de
-            Pujar.
-          </p>
-          <input
-            className="text-input gate-input"
-            maxLength={32}
-            onChange={(event) => setPassword(event.target.value)}
-            onInput={() => setAccessError("")}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                unlockCourse();
-              }
-            }}
-            placeholder="FUNDADOR29"
-            type="password"
-            value={password}
-          />
-          <button className="button button-primary" onClick={unlockCourse} type="button">
-            Entrar al curso
-          </button>
-          {accessError ? <p className="error-copy">{accessError}</p> : null}
-        </div>
-      </main>
+      <CourseAccessGate
+        accessError={accessError}
+        description="Introduce la clave simple para acceder al MVP fundador de Antes de Pujar."
+        onPasswordChange={(value) => {
+          setPassword(value);
+          setAccessError("");
+        }}
+        onSubmit={unlockCourse}
+        password={password}
+        title="Área privada del curso"
+      />
     );
   }
 
@@ -426,24 +388,19 @@ export function CourseExperience() {
               <p className="section-eyebrow">Dashboard del curso</p>
               <h1>Bienvenido al curso Antes de Pujar</h1>
               <p>
-                Este curso esta pensado para que entiendas como funcionan las
-                subastas antes de meter dinero. No es teoria vacia: es un proceso
-                practico para mirar fichas, detectar riesgos, preparar pujas y
+                Este curso está pensado para que entiendas cómo funcionan las
+                subastas antes de meter dinero. No es teoría vacía: es un proceso
+                práctico para mirar fichas, detectar riesgos, preparar pujas y
                 organizar recogidas.
               </p>
             </div>
             <div className="dashboard-actions">
-              <button
+              <Link
                 className="button button-primary"
-                onClick={() =>
-                  document
-                    .getElementById("module-1-anchor")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }
-                type="button"
+                href={getModulePath(courseModules[0].slug)}
               >
-                Empezar modulo 1
-              </button>
+                Empezar módulo 1
+              </Link>
               <button
                 className="button button-secondary"
                 onClick={() => setActiveTool("checklist-auto1")}
@@ -459,7 +416,7 @@ export function CourseExperience() {
                 Abrir detector Copart
               </button>
               <a className="button button-secondary" href={PRINT_ROUTE}>
-                Abrir version imprimible
+                Abrir versión imprimible
               </a>
             </div>
           </div>
@@ -470,13 +427,20 @@ export function CourseExperience() {
               <strong>{overallProgress}% completado</strong>
             </div>
             <p>
-              {moduleDone}/{courseModules.length} modulos marcados, {auto1Done}/
+              {moduleDone}/{courseModules.length} módulos marcados, {auto1Done}/
               {auto1ChecklistItems.length} puntos revisados en Auto1 y {pickupDone}/
               {pickupChecklistItems.length} en recogida.
             </p>
             <div className="progress-bar">
               <span style={{ width: `${overallProgress}%` }} />
             </div>
+            <p>
+              Checklist Auto1: {auto1Percent <= 50
+                ? "Faltan puntos importantes."
+                : auto1Percent <= 85
+                  ? "Revisión parcial."
+                  : "Ficha bastante revisada."}
+            </p>
           </div>
         </div>
       </section>
@@ -512,22 +476,20 @@ export function CourseExperience() {
               active={activeTool === "limites"}
               onClick={() => setActiveTool("limites")}
             >
-              Optimo vs maximo
+              Óptimo vs máximo
             </ToolToggle>
           </div>
 
           {activeTool === "checklist-auto1" ? (
             <ChecklistTool
               items={auto1ChecklistItems}
-              onToggle={(item) =>
-                toggleChecklistItem(setAuto1Checklist, auto1Checklist, item)
-              }
+              onToggle={(item) => toggleChecklistItem(setAuto1Checklist, item)}
               state={auto1Checklist}
               statusText={
-                percentage(auto1Done, auto1ChecklistItems.length) <= 50
+                auto1Percent <= 50
                   ? "Faltan puntos importantes."
-                  : percentage(auto1Done, auto1ChecklistItems.length) <= 85
-                    ? "Revision parcial."
+                  : auto1Percent <= 85
+                    ? "Revisión parcial."
                     : "Ficha bastante revisada."
               }
               subtitle="Checklist persistente para analizar una ficha antes de pujar."
@@ -538,11 +500,9 @@ export function CourseExperience() {
           {activeTool === "checklist-recogida" ? (
             <ChecklistTool
               items={pickupChecklistItems}
-              onToggle={(item) =>
-                toggleChecklistItem(setPickupChecklist, pickupChecklist, item)
-              }
+              onToggle={(item) => toggleChecklistItem(setPickupChecklist, item)}
               state={pickupChecklist}
-              statusText="Usalo para pago, campa, seguro temporal y transporte."
+              statusText="Úsalo para pago, campa, seguro temporal y transporte."
               subtitle="Recuerda la regla 15:00 y deja trazabilidad antes de moverte."
               title="Checklist recogida Auto1"
             />
@@ -554,7 +514,7 @@ export function CourseExperience() {
                 <div>
                   <h3>Detector de riesgo Copart</h3>
                   <p>
-                    Combina senales utiles para decidir si seguir, exigir mas
+                    Combina señales útiles para decidir si seguir, exigir más
                     margen o pasar al siguiente lote.
                   </p>
                 </div>
@@ -582,8 +542,8 @@ export function CourseExperience() {
                 {[
                   ["airbag", "Airbag desplegado"],
                   ["usaDocs", "Documentos USA o sospechosos"],
-                  ["rust", "Oxido fuerte"],
-                  ["mechanical", "Dano mecanico"],
+                  ["rust", "Óxido fuerte"],
+                  ["mechanical", "Daño mecánico"],
                   ["suspiciousPrice", "Precio extremadamente bajo"],
                   ["unsafeToDrive", "No apto para circular con seguridad"],
                   ["zbDocs", "ZB1/ZB2 disponible"],
@@ -598,7 +558,7 @@ export function CourseExperience() {
                       }
                       value={riskInputs[field]}
                     >
-                      <option value="si">Si</option>
+                      <option value="si">Sí</option>
                       <option value="no">No</option>
                     </select>
                   </label>
@@ -609,8 +569,8 @@ export function CourseExperience() {
                 <h4>{riskResult.label}</h4>
                 <p>
                   {riskInputs.unsafeToDrive === "si"
-                    ? "Calcula transporte si o si antes de pujar."
-                    : "No te quedes solo con la puntuacion: revisa la ficha completa."}
+                    ? "Calcula transporte sí o sí antes de pujar."
+                    : "No te quedes solo con la puntuación: revisa la ficha completa."}
                 </p>
                 <ul className="inline-list">
                   {riskResult.notes.map((note) => (
@@ -625,7 +585,7 @@ export function CourseExperience() {
             <section className="tool-panel">
               <div className="tool-panel-header">
                 <div>
-                  <h3>Calculadora basica de coste de compra</h3>
+                  <h3>Calculadora básica de coste de compra</h3>
                   <p>El precio de puja no es el coste real.</p>
                 </div>
                 <span className="pill pill-amber">Coste total</span>
@@ -633,10 +593,10 @@ export function CourseExperience() {
               <div className="form-grid">
                 {[
                   ["bidPrice", "Precio de puja"],
-                  ["fee", "Comision"],
+                  ["fee", "Comisión"],
                   ["transport", "Transporte"],
-                  ["repair", "Reparacion estimada"],
-                  ["paperwork", "Documentacion / matriculacion"],
+                  ["repair", "Reparación estimada"],
+                  ["paperwork", "Documentación / matriculación"],
                   ["other", "Otros gastos"]
                 ].map(([field, label]) => (
                   <label key={field}>
@@ -658,7 +618,7 @@ export function CourseExperience() {
                 <h4>{asCurrency(calculatorTotal)}</h4>
                 <p>
                   Coste real aproximado con los datos actuales. Si el coche no te
-                  cuadra aqui, no te lo arregla la emocion de la subasta.
+                  cuadra aquí, no te lo arregla la emoción de la subasta.
                 </p>
               </div>
             </section>
@@ -668,14 +628,14 @@ export function CourseExperience() {
             <section className="tool-panel">
               <div className="tool-panel-header">
                 <div>
-                  <h3>Optimo vs maximo</h3>
-                  <p>El maximo esta para protegerte, no para alcanzarlo siempre.</p>
+                  <h3>Óptimo vs máximo</h3>
+                  <p>El máximo está para protegerte, no para alcanzarlo siempre.</p>
                 </div>
               </div>
               <div className="form-grid">
                 {[
-                  ["optimum", "Precio optimo"],
-                  ["maximum", "Precio maximo"],
+                  ["optimum", "Precio óptimo"],
+                  ["maximum", "Precio máximo"],
                   ["current", "Puja actual"]
                 ].map(([field, label]) => (
                   <label key={field}>
@@ -711,11 +671,11 @@ export function CourseExperience() {
       <section className="section-block">
         <div className="content-frame">
           <div className="section-heading">
-            <p className="section-eyebrow">Modulos del curso</p>
+            <p className="section-eyebrow">Módulos del curso</p>
             <h2>Contenido real del MVP fundador</h2>
             <p className="section-description">
-              BCA queda fuera del temario principal por ahora y se dejara como
-              actualizacion futura.
+              BCA queda fuera del temario principal por ahora y se dejará como
+              actualización futura.
             </p>
           </div>
           <div className="module-stack">
@@ -723,26 +683,29 @@ export function CourseExperience() {
               const done = completedModules.includes(module.id);
 
               return (
-                <details
-                  className={`module-card ${done ? "done" : ""}`}
+                <article
+                  className={`module-card module-card-compact ${done ? "done" : ""}`}
                   id={index === 0 ? "module-1-anchor" : undefined}
                   key={module.id}
                 >
-                  <summary>
+                  <div className="module-card-summary">
                     <div>
-                      <p className="module-index">Modulo {index + 1}</p>
+                      <p className="module-index">Módulo {index + 1}</p>
                       <h3>{module.title}</h3>
                       <p>{module.summary}</p>
                     </div>
-                    <span className="pill">{done ? "Completado" : "Pendiente"}</span>
-                  </summary>
-                  <div className="module-content">
-                    <ul className="inline-list">
-                      {module.bullets.map((bullet) => (
-                        <li key={bullet}>{bullet}</li>
-                      ))}
-                    </ul>
-                    {module.quote ? <blockquote>{module.quote}</blockquote> : null}
+                    <div className="module-card-meta">
+                      <span className="pill">{done ? "Completado" : "Pendiente"}</span>
+                      <span className="module-duration">{module.duration}</span>
+                    </div>
+                  </div>
+                  <div className="module-card-actions">
+                    <Link
+                      className="button button-secondary"
+                      href={getModulePath(module.slug)}
+                    >
+                      Entrar al módulo
+                    </Link>
                     <button
                       className={`button ${done ? "button-secondary" : "button-primary"}`}
                       onClick={() => toggleModule(module.id)}
@@ -751,9 +714,27 @@ export function CourseExperience() {
                       {done ? "Marcar como pendiente" : "Marcar como completado"}
                     </button>
                   </div>
-                </details>
+                </article>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      <section className="section-block">
+        <div className="content-frame">
+          <div className="section-heading">
+            <p className="section-eyebrow">Casos reales</p>
+            <h2>Referencias preparadas para ampliar el dashboard</h2>
+            <p className="section-description">
+              Tres placeholders listos para documentar operaciones reales de Auto1 y
+              Copart sin cambiar el diseño base del MVP.
+            </p>
+          </div>
+          <div className="module-stack">
+            {caseStudies.map((caseStudy) => (
+              <CaseStudyCard caseStudy={caseStudy} key={caseStudy.id} />
+            ))}
           </div>
         </div>
       </section>

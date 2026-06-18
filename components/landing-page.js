@@ -13,8 +13,8 @@ import {
   BRAND_NAME,
   PRICE_COPY,
   PRIVATE_ROUTE,
-  buildWhatsAppUrl,
-  WHATSAPP_PURCHASE_MESSAGE
+  WHATSAPP_PURCHASE_MESSAGE,
+  buildWhatsAppUrl
 } from "@/lib/site-config";
 
 function CardGrid({ items, className = "" }) {
@@ -52,10 +52,10 @@ export function LandingPage({ launchPrice, futurePrice }) {
             <span className="pill pill-amber">Lanzamiento fundador</span>
             <h1>Antes de pujar, aprende a mirar una subasta como un profesional</h1>
             <p className="lead">
-              Curso practico e interactivo para entender Auto1 y Copart Alemania:
-              filtros, fichas, danos, documentacion, pujas, recogida, transporte
-              y errores que debes evitar. BCA se anadira proximamente como
-              actualizacion.
+              Curso práctico e interactivo para entender Auto1 y Copart Alemania:
+              filtros, fichas, daños, documentación, pujas, recogida, transporte
+              y errores que debes evitar. BCA se añadirá próximamente como
+              actualización.
             </p>
             <div className="chip-row">
               {heroChips.map((chip) => (
@@ -74,7 +74,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
                 Quiero acceso fundador
               </a>
               <a className="button button-secondary" href="#incluye">
-                Ver que incluye
+                Ver qué incluye
               </a>
             </div>
           </div>
@@ -83,7 +83,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
             <p className="eyebrow-label">Precio fundador</p>
             <div className="price-stack">
               <strong>{launchPrice} €</strong>
-              <span>Despues {futurePrice} €</span>
+              <span>Después {futurePrice} €</span>
             </div>
             <p>{PRICE_COPY}</p>
             <a
@@ -95,7 +95,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
               Hablar por WhatsApp
             </a>
             <a className="button button-secondary" href={PRIVATE_ROUTE}>
-              Ver area privada
+              Ver área privada
             </a>
           </aside>
         </div>
@@ -106,7 +106,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
           <SectionHeading
             eyebrow="El problema"
             title="Comprar barato no sirve si calculas mal el resto"
-            description="La mayoria entra en subastas pensando que un coche barato es una oportunidad. Pero el precio de puja no es el coste real. Hay comisiones, transporte, documentacion, danos, plazos, reclamaciones y errores que pueden convertir un supuesto chollo en una ruina."
+            description="La mayoría entra en subastas pensando que un coche barato es una oportunidad. Pero el precio de puja no es el coste real. Hay comisiones, transporte, documentación, daños, plazos, reclamaciones y errores que pueden convertir un supuesto chollo en una ruina."
           />
           <CardGrid items={problemCards} className="problem-grid" />
         </div>
@@ -115,9 +115,9 @@ export function LandingPage({ launchPrice, futurePrice }) {
       <section className="section-block" id="incluye">
         <div className="content-frame">
           <SectionHeading
-            eyebrow="Que aprenderas"
+            eyebrow="Qué aprenderás"
             title="Una ruta clara para entender la operativa antes de meter dinero"
-            description="Pensado para que puedas revisar lotes, preparar pujas y organizar recogidas con un sistema mas solido."
+            description="Pensado para que puedas revisar lotes, preparar pujas y organizar recogidas con un sistema más sólido."
           />
           <CardGrid items={learningCards} />
         </div>
@@ -127,14 +127,14 @@ export function LandingPage({ launchPrice, futurePrice }) {
         <div className="content-frame">
           <SectionHeading
             eyebrow="Plataformas"
-            title="Auto1 y Copart incluidos. BCA llega despues."
-            description="La primera edicion se centra donde ahora mismo mas valor aporta: analisis, puja y recogida en plataformas reales."
+            title="Auto1 y Copart incluidos. BCA llega después."
+            description="La primera edición se centra donde ahora mismo más valor aporta: análisis, puja y recogida en plataformas reales."
           />
           <div className="platform-grid">
             {platforms.map((platform) => (
               <article
                 className={`surface-card platform-card ${
-                  platform.status === "Proximamente" ? "is-muted" : ""
+                  platform.status === "Próximamente" ? "is-muted" : ""
                 }`}
                 key={platform.title}
               >
@@ -154,7 +154,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
           <SectionHeading
             eyebrow="Herramientas"
             title="Curso y dashboard a la vez"
-            description="Cinco ayudas practicas para revisar fichas, calcular costes y no perder el control en plena subasta."
+            description="Cinco ayudas prácticas para revisar fichas, calcular costes y no perder el control en plena subasta."
           />
           <div className="tool-grid">
             {toolCards.map((tool) => (
@@ -173,7 +173,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
       <section className="section-block">
         <div className="content-frame two-column-grid">
           <div>
-            <SectionHeading eyebrow="Para quien es" title="Quien le sacara partido" />
+            <SectionHeading eyebrow="Para quién es" title="Quién le sacará partido" />
             <div className="stack-list">
               {audienceYes.map((item) => (
                 <article className="surface-card list-card positive" key={item}>
@@ -184,8 +184,8 @@ export function LandingPage({ launchPrice, futurePrice }) {
           </div>
           <div>
             <SectionHeading
-              eyebrow="Para quien no es"
-              title="Cuando este curso no encaja"
+              eyebrow="Para quién no es"
+              title="Cuándo este curso no encaja"
             />
             <div className="stack-list">
               {audienceNo.map((item) => (
@@ -203,20 +203,20 @@ export function LandingPage({ launchPrice, futurePrice }) {
           <div>
             <SectionHeading
               eyebrow="Precio fundador"
-              title={`${launchPrice} € hoy. ${futurePrice} € despues.`}
-              description="La primera edicion incluye curso web interactivo, modulos Auto1 y Copart, BCA proximamente, herramientas, PDF descargable y futuras mejoras incluidas."
+              title={`${launchPrice} € hoy. ${futurePrice} € después.`}
+              description="La primera edición incluye curso web interactivo, módulos Auto1 y Copart, BCA próximamente, herramientas, PDF descargable y futuras mejoras incluidas."
             />
           </div>
           <div className="surface-card founder-card">
             <p className="eyebrow-label">Acceso fundador</p>
             <div className="price-stack">
               <strong>{launchPrice} €</strong>
-              <span>Despues {futurePrice} €</span>
+              <span>Después {futurePrice} €</span>
             </div>
             <ul className="feature-list">
               <li>Curso web interactivo</li>
-              <li>Modulos Auto1 y Copart</li>
-              <li>BCA proximamente</li>
+              <li>Módulos Auto1 y Copart</li>
+              <li>BCA próximamente</li>
               <li>Herramientas interactivas</li>
               <li>PDF descargable</li>
               <li>Futuras mejoras incluidas</li>
@@ -251,8 +251,8 @@ export function LandingPage({ launchPrice, futurePrice }) {
         <div className="content-frame final-cta">
           <SectionHeading
             eyebrow="Cierre del lanzamiento"
-            title="Auto1 y Copart incluidos. BCA llegara como actualizacion."
-            description="La idea no es vender humo: es darte una base practica para que mires subastas con mas criterio desde hoy."
+            title="Auto1 y Copart incluidos. BCA llegará como actualización."
+            description="La idea no es vender humo: es darte una base práctica para que mires subastas con más criterio desde hoy."
           />
           <div className="hero-actions centered">
             <a

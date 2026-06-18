@@ -34,8 +34,8 @@ export default function ChecklistSubastasPdfPage() {
           <p className="print-eyebrow">Ivan Imports</p>
           <h1>Checklist de Subastas: Antes de Pujar</h1>
           <p>
-            Guia imprimible para revisar registros, fichas, recogidas, pujas y
-            senales de riesgo antes de meter dinero.
+            Guía imprimible para revisar registros, fichas, recogidas, pujas y
+            señales de riesgo antes de meter dinero.
           </p>
           <a
             className="inline-download"
@@ -51,13 +51,13 @@ export default function ChecklistSubastasPdfPage() {
           <h2>1. Documentos para registrarte</h2>
           <div className="print-grid">
             <article className="print-card">
-              <h3>Autonomo</h3>
-              <PrintableList items={["DNI", "IAE", "Direccion"]} />
+              <h3>Autónomo</h3>
+              <PrintableList items={["DNI", "IAE", "Dirección"]} />
             </article>
             <article className="print-card">
               <h3>Empresa</h3>
               <PrintableList
-                items={["CIF", "IAE", "Direccion", "A veces escrituras"]}
+                items={["CIF", "IAE", "Dirección", "A veces escrituras"]}
               />
             </article>
           </div>
@@ -71,7 +71,7 @@ export default function ChecklistSubastasPdfPage() {
         <section className="print-section">
           <h2>3. Regla 15:00 Auto1</h2>
           <p>
-            Para recoger al dia siguiente, normalmente hay que seleccionar la
+            Para recoger al día siguiente, normalmente hay que seleccionar la
             recogida antes de las 15:00.
           </p>
         </section>
@@ -99,12 +99,12 @@ export default function ChecklistSubastasPdfPage() {
         </section>
 
         <section className="print-section">
-          <h2>7. Optimo vs maximo</h2>
+          <h2>7. Óptimo vs máximo</h2>
           <PrintableList
             items={[
-              "Define tu precio optimo antes de entrar en la subasta.",
-              "Define tu precio maximo absoluto sin moverlo en caliente.",
-              "No superes el maximo aunque falten 100 euros."
+              "Define tu precio óptimo antes de entrar en la subasta.",
+              "Define tu precio máximo absoluto sin moverlo en caliente.",
+              "No superes el máximo aunque falten 100 euros."
             ]}
           />
         </section>
@@ -113,13 +113,13 @@ export default function ChecklistSubastasPdfPage() {
           <h2>Frases destacadas</h2>
           <blockquote>El precio de puja no es el coste real.</blockquote>
           <blockquote>
-            En subasta no compras informacion perfecta, compras informacion
+            En subasta no compras información perfecta, compras información
             suficiente para decidir.
           </blockquote>
           <blockquote>
             La subasta no te arruina de golpe, te arruina de 100 en 100.
           </blockquote>
-          <blockquote>Si no compras ese coche, compraras otro.</blockquote>
+          <blockquote>Si no compras ese coche, comprarás otro.</blockquote>
         </section>
       </div>
     </main>
