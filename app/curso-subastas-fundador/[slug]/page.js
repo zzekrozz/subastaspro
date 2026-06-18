@@ -5,11 +5,14 @@ import { courseModules, getModuleBySlug } from "@/lib/course-content";
 import { SITE_NAME } from "@/lib/site-config";
 
 export function generateStaticParams() {
-  return courseModules.map((module) => ({ slug: module.slug }));
+  return courseModules.map((module) => ({
+    slug: module.slug
+  }));
 }
 
-export function generateMetadata({ params }) {
-  const module = getModuleBySlug(params.slug);
+export async function generateMetadata({ params }) {
+  const resolvedParams = await params;
+  const module = getModuleBySlug(resolvedParams.slug);
 
   if (!module) {
     return {
@@ -26,8 +29,9 @@ export function generateMetadata({ params }) {
   };
 }
 
-export default function CourseModulePage({ params }) {
-  const module = getModuleBySlug(params.slug);
+export default async function CourseModulePage({ params }) {
+  const resolvedParams = await params;
+  const module = getModuleBySlug(resolvedParams.slug);
 
   if (!module) {
     notFound();
