@@ -159,11 +159,31 @@ export function ModulePageExperience({ module }) {
             <p className="section-eyebrow">Módulo {moduleIndex + 1}</p>
             <h1>{module.title}</h1>
             <p className="lead">{module.summary}</p>
+
+            <div className="module-hero-chips">
+              <span className="pill">Duración: {module.duration}</span>
+              <span className="pill">Objetivos: {module.learning.length}</span>
+              <span className="pill">Nivel: práctico</span>
+            </div>
+
+            <div className="module-meta-card module-learning-card">
+              <p className="eyebrow-label">En este módulo aprenderás</p>
+              <ul className="inline-list module-learning-list">
+                {module.learning.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
           </div>
-          <aside className="module-meta-card">
-            <p className="eyebrow-label">Duración estimada</p>
+
+          <aside className="module-meta-card module-hero-sidecard">
+            <p className="eyebrow-label">Resumen rápido</p>
             <strong>{module.duration}</strong>
-            <ul className="inline-list">
+            <p className="module-sidecard-copy">
+              {module.learning.length} objetivos clave para avanzar con criterio y sin ir a
+              ciegas.
+            </p>
+            <ul className="inline-list module-sidecard-list">
               {module.learning.map((item) => (
                 <li key={item}>{item}</li>
               ))}
