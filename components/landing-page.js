@@ -6,8 +6,7 @@ import {
   heroChips,
   learningCards,
   platforms,
-  problemCards,
-  toolCards
+  problemCards
 } from "@/lib/course-content";
 import {
   BRAND_NAME,
@@ -152,17 +151,43 @@ export function LandingPage({ launchPrice, futurePrice }) {
       <section className="section-block">
         <div className="content-frame">
           <SectionHeading
-            eyebrow="Herramientas"
-            title="Curso y dashboard a la vez"
-            description="Cinco ayudas prácticas para revisar fichas, calcular costes y no perder el control en plena subasta."
+            eyebrow="Qué incluye"
+            title="Una experiencia más centrada en contenido y criterio"
+            description="La zona privada se enfoca en módulos, progreso, vídeos por módulo cuando estén disponibles, casos reales, checklist final y una metodología clara para filtrar riesgos antes de pujar."
           />
           <div className="tool-grid">
-            {toolCards.map((tool) => (
-              <article className="surface-card tool-card" key={tool.title}>
-                <div className="tool-badge">{tool.icon}</div>
+            {[
+              {
+                icon: "PDF",
+                title: "Checklist final",
+                description: "Repasa los puntos clave antes de pujar, pagar, recoger o mover un coche."
+              },
+              {
+                icon: "VID",
+                title: "Vídeos por módulo",
+                description: "Cada módulo puede tener su explicación en pantalla real sin sacarte fuera del curso."
+              },
+              {
+                icon: "CAS",
+                title: "Casos reales",
+                description: "Bloques preparados para documentar operaciones reales de Auto1 y Copart."
+              },
+              {
+                icon: "MET",
+                title: "Metodología de revisión",
+                description: "Aprende un proceso repetible para leer fichas, medir riesgos y evitar errores caros."
+              },
+              {
+                icon: "29",
+                title: "Acceso fundador",
+                description: "Entras ahora y mantienes acceso a futuras mejoras del curso."
+              }
+            ].map((item) => (
+              <article className="surface-card tool-card" key={item.title}>
+                <div className="tool-badge">{item.icon}</div>
                 <div>
-                  <h3>{tool.title}</h3>
-                  <p>{tool.description}</p>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
                 </div>
               </article>
             ))}
@@ -204,7 +229,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
             <SectionHeading
               eyebrow="Precio fundador"
               title={`${launchPrice} € hoy. ${futurePrice} € después.`}
-              description="La primera edición incluye curso web interactivo, módulos Auto1 y Copart, BCA próximamente, herramientas, PDF descargable y futuras mejoras incluidas."
+              description="La primera edición incluye el curso web, módulos Auto1 y Copart, vídeos por módulo cuando estén disponibles, checklist final descargable, casos reales y futuras mejoras incluidas."
             />
           </div>
           <div className="surface-card founder-card">
@@ -214,10 +239,11 @@ export function LandingPage({ launchPrice, futurePrice }) {
               <span>Después {futurePrice} €</span>
             </div>
             <ul className="feature-list">
-              <li>Curso web interactivo</li>
+              <li>Curso web privado</li>
               <li>Módulos Auto1 y Copart</li>
               <li>BCA próximamente</li>
-              <li>Herramientas interactivas</li>
+              <li>Vídeos por módulo</li>
+              <li>Casos reales y metodología</li>
               <li>PDF descargable</li>
               <li>Futuras mejoras incluidas</li>
             </ul>

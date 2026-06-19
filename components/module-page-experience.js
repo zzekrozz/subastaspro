@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { CourseAccessGate } from "@/components/course-access-gate";
+import { ModuleVideoModal } from "@/components/module-video-modal";
 import { courseModules, getModulePath } from "@/lib/course-content";
 import {
   BRAND_NAME,
@@ -31,30 +32,18 @@ function ContentBlock({ label, text, tone }) {
 }
 
 function ModuleVideoBlock({ module }) {
-  if (module.youtubeId) {
-    return (
-      <section className="module-section-card">
-        <h2>Vídeo del módulo</h2>
-        <div className="video-embed-shell">
-          <iframe
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="video-embed"
-            src={`https://www.youtube.com/embed/${module.youtubeId}`}
-            title={`Vídeo de ${module.title}`}
-          />
-        </div>
-      </section>
-    );
-  }
+  if (!module.video) return null;
 
   return (
     <section className="module-section-card">
       <h2>Vídeo del módulo</h2>
-      <div className="video-placeholder">
-        <p>Espacio preparado para un vídeo privado o no listado de YouTube.</p>
-        <p>Cuando se añada el enlace, aparecerá aquí sin cambiar la estructura del módulo.</p>
-      </div>
+      <ModuleVideoModal
+        description={module.video.description}
+        duration={module.video.duration}
+        status={module.video.status}
+        title={module.video.title}
+        youtubeId={module.video.youtubeId}
+      />
     </section>
   );
 }
