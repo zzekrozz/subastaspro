@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import { CourseImageBlock } from "@/components/course-image-block";
 import { CourseAccessGate } from "@/components/course-access-gate";
 import { ModuleVideoModal } from "@/components/module-video-modal";
 import { courseModules, getModulePath } from "@/lib/course-content";
@@ -45,6 +46,29 @@ function ModuleVideoBlock({ module }) {
         youtubeId={module.video.youtubeId}
       />
     </section>
+  );
+}
+
+function SectionImagesBlock({ images }) {
+  if (!images?.length) return null;
+
+  const countClass =
+    images.length === 1 ? "count-1" : images.length === 2 ? "count-2" : "count-3-plus";
+
+  return (
+    <div className={`course-image-grid ${countClass}`}>
+      {images.map((image) => (
+        <CourseImageBlock
+          alt={image.alt}
+          blurSensitive={image.blurSensitive}
+          caption={image.caption}
+          key={`${image.src}-${image.alt}`}
+          label={image.label}
+          layout={image.layout}
+          src={image.src}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -219,6 +243,7 @@ export function ModulePageExperience({ module }) {
                     tone="example"
                   />
                 ) : null}
+                <SectionImagesBlock images={section.images} />
               </article>
             ))}
           </div>
