@@ -21,6 +21,37 @@ import {
   buildWhatsAppUrl
 } from "@/lib/site-config";
 
+const courseSections = [
+  {
+    id: "subastas",
+    label: "Bloque 01",
+    title: "Sobre las subastas",
+    description:
+      "Entiende cómo funcionan las subastas profesionales, qué requisitos necesitas y en qué se diferencian de una compra tradicional.",
+    moduleNumbers: [1, 2]
+  },
+  {
+    id: "auto1",
+    label: "Bloque 02",
+    title: "Auto1",
+    description:
+      "Aprende a buscar, filtrar, analizar y recoger vehículos dentro de Auto1 con un proceso claro y práctico.",
+    moduleNumbers: [3, 4, 5, 6]
+  },
+  {
+    id: "copart",
+    label: "Bloque 03",
+    title: "Copart",
+    description:
+      "Domina las pujas, fichas, daños, documentación, pagos y recogida de vehículos comprados en Copart.",
+    moduleNumbers: [7, 8, 9, 10, 11]
+  }
+];
+
+const categorizedModuleNumbers = new Set(
+  courseSections.flatMap((section) => section.moduleNumbers)
+);
+
 export function CourseExperience() {
   const supportUrl = buildWhatsAppUrl(WHATSAPP_SUPPORT_MESSAGE);
   const [ready, setReady] = useState(false);
@@ -53,6 +84,42 @@ export function CourseExperience() {
 
   function toggleModule(id) {
     setCompletedModules((current) => toggleCompletedModule(id, current));
+  }
+
+  function renderModuleCard(module, moduleNumber) {
+    const done = completedModules.includes(module.id);
+
+    return (
+      <article
+        className={`module-card module-card-compact ${done ? "done" : ""}`}
+        id={moduleNumber === 1 ? "module-1-anchor" : undefined}
+        key={module.id}
+      >
+        <div className="module-card-summary">
+          <div>
+            <p className="module-index">Módulo {moduleNumber}</p>
+            <h3>{module.title}</h3>
+            <p>{module.summary}</p>
+          </div>
+          <div className="module-card-meta">
+            <span className="pill">{done ? "Completado" : "Pendiente"}</span>
+            <span className="module-duration">{module.duration}</span>
+          </div>
+        </div>
+        <div className="module-card-actions">
+          <Link className="button button-secondary" href={getModulePath(module.slug)}>
+            Entrar al módulo
+          </Link>
+          <button
+            className={`button ${done ? "button-secondary" : "button-primary"}`}
+            onClick={() => toggleModule(module.id)}
+            type="button"
+          >
+            {done ? "Marcar como pendiente" : "Marcar como completado"}
+          </button>
+        </div>
+      </article>
+    );
   }
 
   if (!ready) {
@@ -193,48 +260,49 @@ export function CourseExperience() {
         <div className="content-frame">
           <div className="section-heading">
             <p className="section-eyebrow">Módulos del curso</p>
-            <h2>Contenido real del MVP fundador</h2>
+            <h2>Ruta del curso por bloques</h2>
             <p className="section-description">
-              BCA queda fuera del temario principal por ahora y se dejará como
-              actualización futura.
+              Avanza por cada bloque en orden: primero entiende la lógica de la subasta,
+              después trabaja Auto1 y termina con la operativa de Copart.
             </p>
           </div>
-          <div className="module-stack">
-            {courseModules.map((module, index) => {
-              const done = completedModules.includes(module.id);
+          <div className="course-section-stack">
+            {courseSections.map((section) => {
+              const sectionModules = section.moduleNumbers
+                .map((moduleNumber) => ({
+                  module: courseModules[moduleNumber - 1],
+                  moduleNumber
+                }))
+                .filter(({ module }) => Boolean(module));
 
               return (
-                <article
-                  className={`module-card module-card-compact ${done ? "done" : ""}`}
-                  id={index === 0 ? "module-1-anchor" : undefined}
-                  key={module.id}
-                >
-                  <div className="module-card-summary">
+                <section className="course-module-section" key={section.id}>
+                  <div className="course-module-section-header">
                     <div>
-                      <p className="module-index">Módulo {index + 1}</p>
-                      <h3>{module.title}</h3>
-                      <p>{module.summary}</p>
+                      <p className="course-module-section-label">{section.label}</p>
+                      <h3>{section.title}</h3>
+                      <p>{section.description}</p>
                     </div>
-                    <div className="module-card-meta">
-                      <span className="pill">{done ? "Completado" : "Pendiente"}</span>
-                      <span className="module-duration">{module.duration}</span>
-                    </div>
+                    <span className="course-module-section-count">
+                      {sectionModules.length} módulos
+                    </span>
                   </div>
-                  <div className="module-card-actions">
-                    <Link className="button button-secondary" href={getModulePath(module.slug)}>
-                      Entrar al módulo
-                    </Link>
-                    <button
-                      className={`button ${done ? "button-secondary" : "button-primary"}`}
-                      onClick={() => toggleModule(module.id)}
-                      type="button"
-                    >
-                      {done ? "Marcar como pendiente" : "Marcar como completado"}
-                    </button>
+                  <div className="module-stack">
+                    {sectionModules.map(({ module, moduleNumber }) =>
+                      renderModuleCard(module, moduleNumber)
+                    )}
                   </div>
-                </article>
+                </section>
               );
             })}
+
+            {courseModules
+              .map((module, index) => ({
+                module,
+                moduleNumber: index + 1
+              }))
+              .filter(({ moduleNumber }) => !categorizedModuleNumbers.has(moduleNumber))
+              .map(({ module, moduleNumber }) => renderModuleCard(module, moduleNumber))}
           </div>
         </div>
       </section>
