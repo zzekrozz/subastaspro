@@ -1128,6 +1128,7 @@ summary:hover {
 }
 
 .module-video-duration {
+  width: fit-content;
   border-color: rgba(245, 166, 35, 0.22);
 }
 
@@ -1189,7 +1190,9 @@ summary:hover {
 .module-video-frame {
   position: relative;
   width: 100%;
-  padding: 18px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #000;
 }
 
 .module-video-frame::before {
@@ -1200,11 +1203,11 @@ summary:hover {
 
 .video-embed {
   position: absolute;
-  inset: 18px;
-  width: calc(100% - 36px);
-  height: calc(100% - 36px);
+  inset: 0;
+  width: 100%;
+  height: 100%;
   border: 0;
-  border-radius: 18px;
+  border-radius: inherit;
   background: #000;
 }
 
@@ -1584,18 +1587,6 @@ summary:hover {
 
   .module-video-overlay {
     padding: 12px;
-  }
-
-  .module-video-header,
-  .module-video-frame {
-    padding: 14px;
-  }
-
-  .video-embed {
-    inset: 14px;
-    width: calc(100% - 28px);
-    height: calc(100% - 28px);
-    border-radius: 14px;
   }
 
   .course-image-grid.count-2,

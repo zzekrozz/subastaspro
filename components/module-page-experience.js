@@ -43,6 +43,7 @@ function ModuleVideoBlock({ module }) {
         duration={module.video.duration}
         status={module.video.status}
         title={module.video.title}
+        videoUrl={module.video.videoUrl}
         youtubeId={module.video.youtubeId}
       />
     </section>
