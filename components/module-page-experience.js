@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { CourseImageBlock } from "@/components/course-image-block";
-import { CourseAccessGate } from "@/components/course-access-gate";
+import { CourseLogoutButton } from "@/components/course-logout-button";
 import { ModuleVideoModal } from "@/components/module-video-modal";
 import { courseModules, getModulePath } from "@/lib/course-content";
 import {
@@ -15,7 +15,6 @@ import {
   buildWhatsAppUrl
 } from "@/lib/site-config";
 import {
-  hasStoredCourseAccess,
   loadCompletedModules,
   saveCompletedModules,
   toggleCompletedModule
@@ -74,11 +73,9 @@ function SectionImagesBlock({ images }) {
 export function ModulePageExperience({ module }) {
   const supportUrl = buildWhatsAppUrl(WHATSAPP_SUPPORT_MESSAGE);
   const [ready, setReady] = useState(false);
-  const [hasAccess, setHasAccess] = useState(false);
   const [completedModules, setCompletedModules] = useState([]);
 
   useEffect(() => {
-    setHasAccess(hasStoredCourseAccess());
     setCompletedModules(loadCompletedModules());
     setReady(true);
   }, []);
@@ -103,16 +100,6 @@ export function ModulePageExperience({ module }) {
 
   if (!ready) {
     return <main className="site-shell loading-shell">Preparando módulo...</main>;
-  }
-
-  if (!hasAccess) {
-    return (
-      <CourseAccessGate
-        description="Introduce el correo utilizado durante la compra y tu código personal de acceso."
-        onAccessGranted={() => setHasAccess(true)}
-        title="Área privada del curso"
-      />
-    );
   }
 
   return (
@@ -143,6 +130,7 @@ export function ModulePageExperience({ module }) {
           >
             WhatsApp soporte
           </a>
+          <CourseLogoutButton />
         </div>
       </header>
 

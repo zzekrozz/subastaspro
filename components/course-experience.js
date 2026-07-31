@@ -4,13 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { CaseStudyCard } from "@/components/case-study-card";
-import { CourseAccessGate } from "@/components/course-access-gate";
+import { CourseLogoutButton } from "@/components/course-logout-button";
 import { caseStudies, courseModules, getModulePath } from "@/lib/course-content";
-import {
-  hasStoredCourseAccess,
-  loadCompletedModules,
-  toggleCompletedModule
-} from "@/lib/course-state";
+import { loadCompletedModules, toggleCompletedModule } from "@/lib/course-state";
 import {
   BRAND_NAME,
   PDF_DOWNLOAD_PATH,
@@ -53,11 +49,9 @@ const categorizedModuleNumbers = new Set(
 export function CourseExperience() {
   const supportUrl = buildWhatsAppUrl(WHATSAPP_SUPPORT_MESSAGE);
   const [ready, setReady] = useState(false);
-  const [hasAccess, setHasAccess] = useState(false);
   const [completedModules, setCompletedModules] = useState([]);
 
   useEffect(() => {
-    setHasAccess(hasStoredCourseAccess());
     setCompletedModules(loadCompletedModules());
     setReady(true);
   }, []);
@@ -111,16 +105,6 @@ export function CourseExperience() {
     return <main className="site-shell loading-shell">Preparando curso...</main>;
   }
 
-  if (!hasAccess) {
-    return (
-      <CourseAccessGate
-        description="Introduce el correo utilizado durante la compra y tu código personal de acceso."
-        onAccessGranted={() => setHasAccess(true)}
-        title="Área privada del curso"
-      />
-    );
-  }
-
   return (
     <main className="site-shell">
       <header className="topbar">
@@ -149,6 +133,7 @@ export function CourseExperience() {
           >
             Soporte WhatsApp
           </a>
+          <CourseLogoutButton />
         </div>
       </header>
 
