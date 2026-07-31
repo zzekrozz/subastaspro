@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
 
+import {
+  COURSE_SESSION_COOKIE,
+  COURSE_SESSION_MAX_AGE_SECONDS
+} from "@/lib/course-session-config";
+import {
+  createCourseSession,
+  hasCourseSessionSecret
+} from "@/lib/course-session";
 import { isValidEmail, normalizeCourseAccessCredentials } from "@/lib/course-state";
 import {
   hasSupabaseAdminConfig,
@@ -43,6 +51,11 @@ export async function POST(request) {
     return jsonResponse({ valid: false, message: ACCESS_CHECK_ERROR_MESSAGE }, 500);
   }
 
+  if (!hasCourseSessionSecret()) {
+    console.error("Missing course session configuration");
+    return jsonResponse({ valid: false, message: ACCESS_CHECK_ERROR_MESSAGE }, 500);
+  }
+
   try {
     const accessCode = await queryCourseAccessCode(credentials);
 
@@ -57,7 +70,18 @@ export async function POST(request) {
       });
     } catch {}
 
-    return jsonResponse({ valid: true }, 200);
+    const response = jsonResponse({ valid: true }, 200);
+    response.cookies.set({
+      name: COURSE_SESSION_COOKIE,
+      value: createCourseSession(accessCode.id),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: COURSE_SESSION_MAX_AGE_SECONDS
+    });
+
+    return response;
   } catch {
     return jsonResponse({ valid: false, message: ACCESS_CHECK_ERROR_MESSAGE }, 500);
   }

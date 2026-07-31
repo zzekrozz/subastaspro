@@ -1,3 +1,4 @@
+import { CourseAccessGate } from "@/components/course-access-gate";
 import { SectionHeading } from "@/components/section-heading";
 import {
   audienceNo,
@@ -97,6 +98,15 @@ export function LandingPage({ launchPrice, futurePrice }) {
               Ver área privada
             </a>
           </aside>
+        </div>
+      </section>
+
+      <section className="section-block" id="acceso">
+        <div className="content-frame">
+          <CourseAccessGate
+            description="Introduce el correo utilizado durante la compra y tu código personal de acceso."
+            title="Área privada del curso"
+          />
         </div>
       </section>
 

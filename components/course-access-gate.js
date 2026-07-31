@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 
-import { storeCourseAccess } from "@/lib/course-state";
-import { BRAND_NAME } from "@/lib/site-config";
+import { BRAND_NAME, PRIVATE_ROUTE } from "@/lib/site-config";
 
 export function CourseAccessGate({
   description,
-  onAccessGranted,
+  redirectTo = PRIVATE_ROUTE,
   title
 }) {
   const [email, setEmail] = useState("");
@@ -38,8 +37,7 @@ export function CourseAccessGate({
       const data = await response.json().catch(() => ({}));
 
       if (response.ok && data.valid) {
-        storeCourseAccess();
-        onAccessGranted();
+        window.location.assign(redirectTo);
         return;
       }
 
@@ -54,7 +52,7 @@ export function CourseAccessGate({
   }
 
   return (
-    <main className="site-shell gate-shell">
+    <section className="gate-shell">
       <div className="gate-card">
         <p className="pill pill-amber">{BRAND_NAME}</p>
         <h1>{title}</h1>
@@ -105,6 +103,6 @@ export function CourseAccessGate({
         </button>
         {accessError ? <p className="error-copy">{accessError}</p> : null}
       </div>
-    </main>
+    </section>
   );
 }

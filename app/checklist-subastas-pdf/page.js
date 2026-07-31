@@ -5,6 +5,7 @@ import {
   copartKeys,
   pickupChecklistItems
 } from "@/lib/course-content";
+import { requireCourseSession } from "@/lib/course-session";
 import { PDF_DOWNLOAD_PATH, SITE_NAME } from "@/lib/site-config";
 
 export const metadata = {
@@ -25,7 +26,9 @@ function PrintableList({ items }) {
   );
 }
 
-export default function ChecklistSubastasPdfPage() {
+export default async function ChecklistSubastasPdfPage() {
+  await requireCourseSession();
+
   return (
     <main className="print-page">
       <PrintToolbar />
