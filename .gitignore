@@ -4,6 +4,8 @@ npm-debug.log*
 dist
 .env
 .env.*
+!.env.example
+.npm-cache/
 .vercel
 *.log
 work/*.log
