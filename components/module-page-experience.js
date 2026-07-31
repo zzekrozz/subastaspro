@@ -16,10 +16,8 @@ import {
 } from "@/lib/site-config";
 import {
   hasStoredCourseAccess,
-  isValidCoursePassword,
   loadCompletedModules,
   saveCompletedModules,
-  storeCourseAccess,
   toggleCompletedModule
 } from "@/lib/course-state";
 
@@ -77,8 +75,6 @@ export function ModulePageExperience({ module }) {
   const supportUrl = buildWhatsAppUrl(WHATSAPP_SUPPORT_MESSAGE);
   const [ready, setReady] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
-  const [password, setPassword] = useState("");
-  const [accessError, setAccessError] = useState("");
   const [completedModules, setCompletedModules] = useState([]);
 
   useEffect(() => {
@@ -101,17 +97,6 @@ export function ModulePageExperience({ module }) {
     [completedModules, module.id]
   );
 
-  function unlockCourse() {
-    if (isValidCoursePassword(password)) {
-      storeCourseAccess();
-      setHasAccess(true);
-      setAccessError("");
-      return;
-    }
-
-    setAccessError("Clave incorrecta. Revisa el mensaje de acceso.");
-  }
-
   function handleToggleComplete() {
     setCompletedModules((current) => toggleCompletedModule(module.id, current));
   }
@@ -123,15 +108,9 @@ export function ModulePageExperience({ module }) {
   if (!hasAccess) {
     return (
       <CourseAccessGate
-        accessError={accessError}
-        description="Introduce la misma clave del curso para acceder a este módulo detallado."
-        onPasswordChange={(value) => {
-          setPassword(value);
-          setAccessError("");
-        }}
-        onSubmit={unlockCourse}
-        password={password}
-        title={module.title}
+        description="Introduce el correo utilizado durante la compra y tu código personal de acceso."
+        onAccessGranted={() => setHasAccess(true)}
+        title="Área privada del curso"
       />
     );
   }

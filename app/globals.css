@@ -486,6 +486,24 @@ summary:hover {
   line-height: 1;
 }
 
+.gate-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.gate-fields label {
+  display: grid;
+  gap: 8px;
+  text-align: left;
+}
+
+.gate-fields span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 .text-input {
   width: 100%;
   min-height: 48px;

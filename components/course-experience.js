@@ -8,9 +8,7 @@ import { CourseAccessGate } from "@/components/course-access-gate";
 import { caseStudies, courseModules, getModulePath } from "@/lib/course-content";
 import {
   hasStoredCourseAccess,
-  isValidCoursePassword,
   loadCompletedModules,
-  storeCourseAccess,
   toggleCompletedModule
 } from "@/lib/course-state";
 import {
@@ -56,8 +54,6 @@ export function CourseExperience() {
   const supportUrl = buildWhatsAppUrl(WHATSAPP_SUPPORT_MESSAGE);
   const [ready, setReady] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
-  const [password, setPassword] = useState("");
-  const [accessError, setAccessError] = useState("");
   const [completedModules, setCompletedModules] = useState([]);
 
   useEffect(() => {
@@ -70,17 +66,6 @@ export function CourseExperience() {
   const overallProgress = useMemo(() => {
     return Math.round((moduleDone / courseModules.length) * 100);
   }, [moduleDone]);
-
-  function unlockCourse() {
-    if (isValidCoursePassword(password)) {
-      storeCourseAccess();
-      setHasAccess(true);
-      setAccessError("");
-      return;
-    }
-
-    setAccessError("Clave incorrecta. Revisa el mensaje de acceso.");
-  }
 
   function toggleModule(id) {
     setCompletedModules((current) => toggleCompletedModule(id, current));
@@ -129,14 +114,8 @@ export function CourseExperience() {
   if (!hasAccess) {
     return (
       <CourseAccessGate
-        accessError={accessError}
-        description="Introduce la clave simple para acceder al MVP fundador de Antes de Pujar."
-        onPasswordChange={(value) => {
-          setPassword(value);
-          setAccessError("");
-        }}
-        onSubmit={unlockCourse}
-        password={password}
+        description="Introduce el correo utilizado durante la compra y tu código personal de acceso."
+        onAccessGranted={() => setHasAccess(true)}
         title="Área privada del curso"
       />
     );
