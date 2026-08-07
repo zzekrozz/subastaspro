@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createCourseAccessForCheckout } from "@/lib/course-access-repository";
+import { deliverCourseAccessEmailForPurchase } from "@/lib/course-access-email";
 import {
   checkoutSessionContainsPrice,
   getStripeClient,
@@ -143,8 +144,10 @@ export async function POST(request) {
     return webhookResponse();
   }
 
+  let accessResult;
+
   try {
-    const status = await createCourseAccessForCheckout({
+    accessResult = await createCourseAccessForCheckout({
       email,
       stripeSessionId: sessionId,
       stripeCustomerId: getCustomerId(session.customer)
@@ -154,7 +157,41 @@ export async function POST(request) {
       eventId: event.id,
       eventType: event.type,
       sessionId,
-      status
+      status: accessResult.status
+    });
+  } catch {
+    logWebhook({
+      eventId: event.id,
+      eventType: event.type,
+      sessionId,
+      status: "failed"
+    }, "error");
+    return webhookResponse(500);
+  }
+
+  try {
+    const emailResult = await deliverCourseAccessEmailForPurchase({
+      stripeSessionId: sessionId
+    });
+
+    if (emailResult.status === "in_progress") {
+      logWebhook({
+        eventId: event.id,
+        eventType: event.type,
+        sessionId,
+        status: "email_in_progress"
+      });
+      return webhookResponse(500);
+    }
+
+    logWebhook({
+      eventId: event.id,
+      eventType: event.type,
+      sessionId,
+      status:
+        emailResult.status === "already_sent"
+          ? "email_already_sent"
+          : "email_sent"
     });
     return webhookResponse();
   } catch {
@@ -162,7 +199,7 @@ export async function POST(request) {
       eventId: event.id,
       eventType: event.type,
       sessionId,
-      status: "failed"
+      status: "email_failed"
     }, "error");
     return webhookResponse(500);
   }

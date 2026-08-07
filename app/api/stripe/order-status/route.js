@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { hasCourseAccessForStripeSession } from "@/lib/course-access-repository";
+import { getCourseAccessByStripeSessionId } from "@/lib/course-access-repository";
 import {
   checkoutSessionContainsPrice,
   getStripeClient,
@@ -104,12 +104,19 @@ export async function GET(request) {
   );
 
   try {
-    const accessCreated = await hasCourseAccessForStripeSession(session.id);
+    const access = await getCourseAccessByStripeSessionId(session.id);
+    const accessCreated = Boolean(access);
+    const emailStatus = ["pending", "sending", "sent", "failed"].includes(
+      access?.email_status
+    )
+      ? access.email_status
+      : "pending";
 
     return statusResponse({
       status: accessCreated ? "ready" : "processing",
       paymentConfirmed: true,
       accessCreated,
+      emailStatus,
       maskedEmail
     });
   } catch {

@@ -1912,6 +1912,10 @@ summary:hover {
   background: linear-gradient(180deg, rgba(245, 166, 35, 0.07), transparent);
 }
 
+.payment-success-step.is-delayed {
+  background: linear-gradient(180deg, rgba(245, 166, 35, 0.045), transparent);
+}
+
 .payment-success-step-marker {
   display: grid;
   place-items: center;
@@ -1937,6 +1941,11 @@ summary:hover {
   animation: payment-status-pulse 1.5s ease-in-out infinite;
 }
 
+.payment-success-step.is-delayed .payment-success-step-marker {
+  border-color: rgba(245, 166, 35, 0.34);
+  color: var(--amber);
+}
+
 .payment-success-step-state {
   margin: 0 0 8px;
   color: var(--muted-2);
@@ -1951,6 +1960,10 @@ summary:hover {
 }
 
 .payment-success-step.is-active .payment-success-step-state {
+  color: var(--amber);
+}
+
+.payment-success-step.is-delayed .payment-success-step-state {
   color: var(--amber);
 }
 
@@ -1990,7 +2003,8 @@ summary:hover {
   line-height: 1.65;
 }
 
-.status-panel-ready {
+.status-panel-ready,
+.status-panel-sent {
   border-color: rgba(47, 176, 106, 0.22);
   background:
     linear-gradient(100deg, rgba(47, 176, 106, 0.08), transparent 45%),

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const POLL_INTERVAL_MS = 2000;
 const POLL_TIMEOUT_MS = 30000;
+const PUBLIC_EMAIL_STATUSES = new Set(["pending", "sending", "sent", "failed"]);
 
 const PROCESS_STEPS = [
   {
@@ -103,15 +104,24 @@ export function PaymentSuccessExperience({
 
         const nextStatus =
           typeof body?.status === "string" ? body.status : "error";
+        const accessCreated = body?.accessCreated === true;
+        const nextEmailStatus = PUBLIC_EMAIL_STATUSES.has(body?.emailStatus)
+          ? body.emailStatus
+          : null;
         setResult({
           status: nextStatus,
           paymentConfirmed: body?.paymentConfirmed === true,
-          accessCreated: body?.accessCreated === true,
+          accessCreated,
+          emailStatus: nextEmailStatus,
           maskedEmail:
             typeof body?.maskedEmail === "string" ? body.maskedEmail : null
         });
 
-        if (nextStatus === "processing") {
+        const shouldKeepPolling =
+          nextStatus === "processing" ||
+          (accessCreated && ["pending", "sending"].includes(nextEmailStatus));
+
+        if (shouldKeepPolling) {
           const elapsed = Date.now() - startedAt;
 
           if (elapsed < POLL_TIMEOUT_MS) {
@@ -147,11 +157,55 @@ export function PaymentSuccessExperience({
 
   const status = result.status;
   const confirmed = result.paymentConfirmed === true;
-  const displayStatus = timedOut && status === "processing" ? "delayed" : status;
+  const emailStatus = result.emailStatus;
+  let displayStatus = status;
+
+  if (timedOut && result.accessCreated) {
+    displayStatus = "email_delayed";
+  } else if (timedOut && status === "processing") {
+    displayStatus = "delayed";
+  } else if (status === "ready" && emailStatus === "sent") {
+    displayStatus = "sent";
+  } else if (status === "ready" && emailStatus === "failed") {
+    displayStatus = "email_failed";
+  } else if (status === "ready") {
+    displayStatus = "email_sending";
+  }
   const isChecking = status === "checking";
 
   const content = useMemo(() => {
     switch (displayStatus) {
+      case "sent":
+        return {
+          eyebrow: "Compra verificada",
+          title: "Tu acceso ha sido enviado",
+          lead:
+            "Hemos enviado tu c\u00f3digo personal al correo utilizado durante la compra.",
+          panelTitle: "Tu acceso ya est\u00e1 en tu correo",
+          panelText:
+            "Si no lo encuentras en la bandeja de entrada, revisa tambi\u00e9n spam, promociones o correo no deseado."
+        };
+      case "email_sending":
+        return {
+          eyebrow: "Compra verificada",
+          title: "Tu acceso est\u00e1 preparado",
+          lead:
+            "La compra est\u00e1 confirmada y tu c\u00f3digo personal ya existe. Estamos enviando las instrucciones a tu correo.",
+          panelTitle: "Estamos enviando tu acceso",
+          panelText:
+            "Normalmente tarda solo unos segundos. Puedes mantener esta p\u00e1gina abierta mientras terminamos el env\u00edo."
+        };
+      case "email_failed":
+      case "email_delayed":
+        return {
+          eyebrow: "Compra verificada",
+          title: "Tu acceso est\u00e1 preparado",
+          lead:
+            "Estamos teniendo una demora al enviar el correo. No necesitas volver a pagar.",
+          panelTitle: "El env\u00edo est\u00e1 tardando m\u00e1s de lo habitual",
+          panelText:
+            "Int\u00e9ntalo de nuevo en unos minutos o contacta con soporte si el correo no llega. Tu compra y tu acceso siguen registrados."
+        };
       case "ready":
         return {
           eyebrow: "Compra verificada",
@@ -228,7 +282,16 @@ export function PaymentSuccessExperience({
     setRefreshKey((value) => value + 1);
   }
 
-  const showProcess = confirmed || ["processing", "ready", "delayed"].includes(displayStatus);
+  const showProcess =
+    confirmed ||
+    [
+      "processing",
+      "sent",
+      "email_sending",
+      "email_failed",
+      "email_delayed",
+      "delayed"
+    ].includes(displayStatus);
 
   return (
     <main className={`payment-success-page status-${displayStatus}`}>
@@ -256,7 +319,9 @@ export function PaymentSuccessExperience({
 
           {confirmed && result.maskedEmail ? (
             <div className="payment-success-email">
-              <span>Enviaremos el acceso a</span>
+              <span>
+                {displayStatus === "sent" ? "Acceso enviado a" : "Enviaremos el acceso a"}
+              </span>
               <strong>{result.maskedEmail}</strong>
             </div>
           ) : null}
@@ -280,15 +345,24 @@ export function PaymentSuccessExperience({
               </>
             ) : null}
 
-            {["ready", "delayed"].includes(displayStatus) ? (
+            {["sent", "delayed", "email_delayed", "email_failed"].includes(
+              displayStatus
+            ) ? (
               <ActionLink href="/antes-de-pujar#acceso" primary>
                 Ir al área privada
               </ActionLink>
             ) : null}
 
-            {["ready", "processing", "delayed", "pending", "error"].includes(
-              displayStatus
-            ) ? (
+            {[
+              "sent",
+              "email_sending",
+              "email_failed",
+              "email_delayed",
+              "processing",
+              "delayed",
+              "pending",
+              "error"
+            ].includes(displayStatus) ? (
               <button
                 className="button button-secondary"
                 disabled={isChecking}
@@ -314,15 +388,21 @@ export function PaymentSuccessExperience({
                 const completed =
                   index === 0
                     ? confirmed
-                    : index === 1 && displayStatus === "ready";
+                    : index === 1
+                      ? result.accessCreated === true
+                      : emailStatus === "sent";
                 const active =
-                  index === 1 && ["processing", "delayed"].includes(displayStatus);
+                  (index === 1 && confirmed && result.accessCreated !== true) ||
+                  (index === 2 && ["pending", "sending"].includes(emailStatus));
+                const delayed =
+                  index === 2 &&
+                  ["email_failed", "email_delayed"].includes(displayStatus);
 
                 return (
                   <article
                     className={`payment-success-step ${completed ? "is-complete" : ""} ${
                       active ? "is-active" : ""
-                    }`.trim()}
+                    } ${delayed ? "is-delayed" : ""}`.trim()}
                     key={step.number}
                   >
                     <div className="payment-success-step-marker">
@@ -330,7 +410,13 @@ export function PaymentSuccessExperience({
                     </div>
                     <div>
                       <p className="payment-success-step-state">
-                        {completed ? "Completado" : active ? "En curso" : "Siguiente"}
+                        {completed
+                          ? "Completado"
+                          : active
+                            ? "En curso"
+                            : delayed
+                              ? "Demora"
+                              : "Siguiente"}
                       </p>
                       <h3>{step.title}</h3>
                       <p>{step.description}</p>
@@ -352,7 +438,7 @@ export function PaymentSuccessExperience({
               <h2 id="status-panel-title">{content.panelTitle}</h2>
               <p>{content.panelText}</p>
             </div>
-            {displayStatus === "processing" ? (
+            {["processing", "email_sending"].includes(displayStatus) ? (
               <div className="payment-success-loading" aria-label="Procesando">
                 <span />
               </div>
