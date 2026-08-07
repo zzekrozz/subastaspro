@@ -13,8 +13,7 @@ import {
   BRAND_NAME,
   PRICE_COPY,
   PRIVATE_ROUTE,
-  WHATSAPP_PURCHASE_MESSAGE,
-  buildWhatsAppUrl
+  STRIPE_PAYMENT_LINK
 } from "@/lib/site-config";
 
 function CardGrid({ items, className = "" }) {
@@ -30,8 +29,6 @@ function CardGrid({ items, className = "" }) {
 }
 
 export function LandingPage({ launchPrice, futurePrice }) {
-  const purchaseUrl = buildWhatsAppUrl(WHATSAPP_PURCHASE_MESSAGE);
-
   return (
     <main className="site-shell">
       <header className="topbar">
@@ -40,7 +37,10 @@ export function LandingPage({ launchPrice, futurePrice }) {
           <span className="brand-divider">/</span>
           <span className="brand-course">Antes de Pujar</span>
         </div>
-        <a className="button button-secondary button-small" href="#precio">
+        <a
+          className="button button-secondary button-small"
+          href={STRIPE_PAYMENT_LINK}
+        >
           Acceso fundador
         </a>
       </header>
@@ -67,9 +67,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
             <div className="hero-actions">
               <a
                 className="button button-primary"
-                href={purchaseUrl}
-                rel="noreferrer"
-                target="_blank"
+                href={STRIPE_PAYMENT_LINK}
               >
                 Quiero acceso fundador
               </a>
@@ -82,17 +80,15 @@ export function LandingPage({ launchPrice, futurePrice }) {
           <aside className="price-panel" id="precio">
             <p className="eyebrow-label">Precio fundador</p>
             <div className="price-stack">
-              <strong>{launchPrice} €</strong>
-              <span>Después {futurePrice} €</span>
+              <strong>{launchPrice} € + IVA</strong>
+              <span>35,09 € IVA incluido en España</span>
             </div>
             <p>{PRICE_COPY}</p>
             <a
               className="button button-primary"
-              href={purchaseUrl}
-              rel="noreferrer"
-              target="_blank"
+              href={STRIPE_PAYMENT_LINK}
             >
-              Hablar por WhatsApp
+              Comprar acceso
             </a>
             <a className="button button-secondary" href={PRIVATE_ROUTE}>
               Ver área privada
@@ -238,15 +234,15 @@ export function LandingPage({ launchPrice, futurePrice }) {
           <div>
             <SectionHeading
               eyebrow="Precio fundador"
-              title={`${launchPrice} € hoy. ${futurePrice} € después.`}
+              title={`${launchPrice} € + IVA hoy. ${futurePrice} € + IVA después.`}
               description="La primera edición incluye el curso web, módulos Auto1 y Copart, vídeos por módulo cuando estén disponibles, checklist final descargable, casos reales y futuras mejoras incluidas."
             />
           </div>
           <div className="surface-card founder-card">
             <p className="eyebrow-label">Acceso fundador</p>
             <div className="price-stack">
-              <strong>{launchPrice} €</strong>
-              <span>Después {futurePrice} €</span>
+              <strong>{launchPrice} € + IVA</strong>
+              <span>35,09 € IVA incluido en España</span>
             </div>
             <ul className="feature-list">
               <li>Curso web privado</li>
@@ -259,9 +255,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
             </ul>
             <a
               className="button button-primary"
-              href={purchaseUrl}
-              rel="noreferrer"
-              target="_blank"
+              href={STRIPE_PAYMENT_LINK}
             >
               Quiero acceso fundador
             </a>
@@ -293,9 +287,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
           <div className="hero-actions centered">
             <a
               className="button button-primary"
-              href={purchaseUrl}
-              rel="noreferrer"
-              target="_blank"
+              href={STRIPE_PAYMENT_LINK}
             >
               Quiero acceso fundador
             </a>
