@@ -10,27 +10,47 @@ const PROCESS_STEPS = [
   {
     number: "01",
     title: "Pago confirmado",
-    description: "Stripe ha confirmado correctamente la compra."
+    description: "Stripe valida la compra de forma segura."
   },
   {
     number: "02",
-    title: "Creando tu acceso",
-    description: "Estamos generando tu código personal de SubastasPro."
+    title: "Acceso generado",
+    description: "Creamos tus credenciales personales."
   },
   {
     number: "03",
-    title: "Revisa tu correo",
-    description:
-      "Recibirás las instrucciones de acceso en el correo utilizado durante la compra."
+    title: "Código enviado",
+    description: "Recibes las instrucciones en tu correo."
   }
 ];
 
-const NEXT_STEPS = [
-  "Confirmamos la compra",
-  "Generamos un código personal",
-  "Recibes el acceso en tu correo",
-  "Entras al curso y empiezas a avanzar"
+const COURSE_VALUE_ITEMS = [
+  {
+    number: "01",
+    label: "Analiza",
+    text: "Aprende a interpretar una subasta antes de pujar."
+  },
+  {
+    number: "02",
+    label: "Calcula",
+    text: "Detecta costes y márgenes antes de comprometer dinero."
+  },
+  {
+    number: "03",
+    label: "Puja",
+    text: "Toma decisiones con un criterio mucho más claro."
+  }
 ];
+
+const REFRESHABLE_STATUSES = new Set([
+  "processing",
+  "email_sending",
+  "email_failed",
+  "email_delayed",
+  "delayed",
+  "pending",
+  "error"
+]);
 
 function getInitialStatus(sessionId, hasInvalidSessionParameter) {
   if (hasInvalidSessionParameter) return "invalid";
@@ -157,10 +177,11 @@ export function PaymentSuccessExperience({
 
   const status = result.status;
   const confirmed = result.paymentConfirmed === true;
+  const accessCreated = result.accessCreated === true;
   const emailStatus = result.emailStatus;
   let displayStatus = status;
 
-  if (timedOut && result.accessCreated) {
+  if (timedOut && accessCreated) {
     displayStatus = "email_delayed";
   } else if (timedOut && status === "processing") {
     displayStatus = "delayed";
@@ -171,108 +192,98 @@ export function PaymentSuccessExperience({
   } else if (status === "ready") {
     displayStatus = "email_sending";
   }
+
   const isChecking = status === "checking";
+  const isComplete = confirmed && accessCreated && emailStatus === "sent";
 
   const content = useMemo(() => {
     switch (displayStatus) {
       case "sent":
         return {
-          eyebrow: "Compra verificada",
-          title: "Tu acceso ha sido enviado",
+          stateLabel: "Compra completada",
+          title: "Ya estás dentro.",
           lead:
-            "Hemos enviado tu c\u00f3digo personal al correo utilizado durante la compra.",
-          panelTitle: "Tu acceso ya est\u00e1 en tu correo",
-          panelText:
-            "Si no lo encuentras en la bandeja de entrada, revisa tambi\u00e9n spam, promociones o correo no deseado."
+            "Tu compra se ha confirmado y tu acceso personal a SubastasPro está preparado."
         };
       case "email_sending":
         return {
-          eyebrow: "Compra verificada",
-          title: "Tu acceso est\u00e1 preparado",
-          lead:
-            "La compra est\u00e1 confirmada y tu c\u00f3digo personal ya existe. Estamos enviando las instrucciones a tu correo.",
-          panelTitle: "Estamos enviando tu acceso",
+          stateLabel: "Entrega automática",
+          title: "Tu acceso ya está creado",
+          lead: "Estamos enviando ahora mismo tu código personal.",
+          panelTitle: "Envío automático en curso",
           panelText:
-            "Normalmente tarda solo unos segundos. Puedes mantener esta p\u00e1gina abierta mientras terminamos el env\u00edo."
+            "Mantén esta página abierta unos segundos. Actualizaremos el estado cuando el correo esté enviado."
         };
       case "email_failed":
       case "email_delayed":
         return {
-          eyebrow: "Compra verificada",
-          title: "Tu acceso est\u00e1 preparado",
+          stateLabel: "Acceso protegido",
+          title: "Tu acceso está preparado",
           lead:
-            "Estamos teniendo una demora al enviar el correo. No necesitas volver a pagar.",
-          panelTitle: "El env\u00edo est\u00e1 tardando m\u00e1s de lo habitual",
+            "El envío del correo está tardando un poco más de lo habitual. Tu compra está registrada y no necesitas volver a pagar.",
+          panelTitle: "Tu compra está a salvo",
           panelText:
-            "Int\u00e9ntalo de nuevo en unos minutos o contacta con soporte si el correo no llega. Tu compra y tu acceso siguen registrados."
-        };
-      case "ready":
-        return {
-          eyebrow: "Compra verificada",
-          title: "Pago confirmado. Tu acceso está en marcha.",
-          lead:
-            "Hemos recibido correctamente tu compra de SubastasPro. Tu acceso personal ya está preparado.",
-          panelTitle: "Tu acceso ya ha sido creado",
-          panelText:
-            "Tu código personal está preparado. En cuanto recibas el correo, podrás entrar en el área privada y comenzar el curso."
+            "Puedes volver a comprobar el estado en unos segundos."
         };
       case "processing":
         return {
-          eyebrow: "Compra verificada",
-          title: "Pago confirmado. Tu acceso está en marcha.",
+          stateLabel: "Creación automática",
+          title: "Estamos preparando tu acceso",
           lead:
-            "Hemos recibido correctamente tu compra de SubastasPro. Estamos preparando tu acceso personal y lo enviaremos al correo utilizado durante el pago.",
-          panelTitle: "Estamos preparando tu acceso",
+            "El pago ya está confirmado. Solo necesitamos unos segundos para generar y enviar tus credenciales.",
+          panelTitle: "Generando tus credenciales",
           panelText:
-            "Normalmente tarda solo unos segundos. Puedes mantener esta página abierta mientras terminamos el proceso."
+            "No tienes que hacer nada más. El proceso continuará automáticamente."
         };
       case "delayed":
         return {
-          eyebrow: "Compra registrada",
-          title: "Tu pago está registrado",
+          stateLabel: "Compra registrada",
+          title: "Estamos preparando tu acceso",
           lead:
-            "La preparación del acceso está tardando un poco más de lo habitual. No necesitas volver a pagar.",
-          panelTitle: "Seguimos preparando tu acceso",
+            "La generación de tus credenciales está tardando un poco más de lo habitual. No necesitas volver a pagar.",
+          panelTitle: "Seguimos trabajando en tu acceso",
           panelText:
-            "En cuanto finalice, recibirás las instrucciones en tu correo. Revisa también spam, promociones o correo no deseado cuando recibas el mensaje."
+            "Puedes volver a comprobar el estado en unos segundos."
         };
       case "pending":
         return {
-          eyebrow: "Verificación en curso",
-          title: "El pago todavía se está confirmando",
+          stateLabel: "Confirmación en curso",
+          title: "Estamos confirmando tu pago",
           lead:
-            "Algunos métodos de pago necesitan un poco más de tiempo. Vuelve a comprobar el estado en unos instantes.",
-          panelTitle: "Esperando confirmación",
-          panelText:
-            "No cierres esta página si quieres seguir consultando el estado de la operación."
+            "Algunos métodos de pago necesitan unos instantes más. En cuanto Stripe lo confirme, prepararemos tu acceso.",
+          panelTitle: "Validación segura en curso",
+          panelText: "Puedes actualizar el estado dentro de unos segundos."
         };
       case "invalid":
         return {
-          eyebrow: "Enlace no verificado",
-          title: "No hemos podido verificar esta compra desde este enlace",
+          stateLabel: "Enlace no verificado",
+          title: "No podemos comprobar esta compra desde este enlace",
           lead:
-            "Puede que el enlace esté incompleto, haya caducado o se haya abierto sin venir directamente desde Stripe."
+            "Si acabas de realizar el pago, vuelve a abrir el enlace de confirmación de Stripe o entra directamente al área privada cuando recibas tus credenciales."
         };
       case "error":
         return {
-          eyebrow: "Consulta no disponible",
-          title: "Estamos teniendo problemas para consultar el estado",
+          stateLabel: "Consulta temporal",
+          title: "No podemos actualizar el estado ahora",
           lead:
-            "Tu pago no se ha perdido. Espera unos segundos y vuelve a intentarlo."
+            "Tu compra no se ha perdido. Espera unos segundos y vuelve a comprobarla.",
+          panelTitle: "Vuelve a comprobarlo en unos segundos",
+          panelText:
+            "Si el pago ya se completó, no necesitas repetirlo."
         };
       case "missing":
         return {
-          eyebrow: "Ivan Imports · SubastasPro",
+          stateLabel: "Ivan Imports · SubastasPro",
           title: "Gracias por confiar en SubastasPro",
           lead:
-            "Para consultar una compra concreta, abre el enlace de confirmación facilitado después del pago."
+            "Si ya has realizado tu compra, encontrarás el acceso en el correo utilizado durante el pago."
         };
       default:
         return {
-          eyebrow: "Verificando compra",
-          title: "Estamos comprobando tu operación",
+          stateLabel: "Verificación segura",
+          title: "Estamos comprobando tu compra",
           lead:
-            "Solo tardaremos unos segundos en confirmar el pago y localizar la preparación de tu acceso."
+            "Solo tardaremos unos segundos en confirmar el pago y localizar tu acceso."
         };
     }
   }, [displayStatus]);
@@ -282,7 +293,7 @@ export function PaymentSuccessExperience({
     setRefreshKey((value) => value + 1);
   }
 
-  const showProcess =
+  const showPurchaseDetails =
     confirmed ||
     [
       "processing",
@@ -292,6 +303,10 @@ export function PaymentSuccessExperience({
       "email_delayed",
       "delayed"
     ].includes(displayStatus);
+  const canRefresh = Boolean(sessionId) && REFRESHABLE_STATUSES.has(displayStatus);
+  const showLoading = ["checking", "processing", "email_sending"].includes(
+    displayStatus
+  );
 
   return (
     <main className={`payment-success-page status-${displayStatus}`}>
@@ -304,7 +319,10 @@ export function PaymentSuccessExperience({
         <span className="payment-success-secure-label">Compra segura</span>
       </header>
 
-      <div className="payment-success-background" aria-hidden="true" />
+      <div className="payment-success-background" aria-hidden="true">
+        <span className="payment-success-rail rail-left" />
+        <span className="payment-success-rail rail-right" />
+      </div>
 
       <section
         className="payment-success-hero"
@@ -312,22 +330,31 @@ export function PaymentSuccessExperience({
         aria-live="polite"
       >
         <div className="payment-success-hero-inner">
+          <p className="payment-success-brand-label">Ivan Imports · SubastasPro</p>
           <StatusSeal confirmed={confirmed} checking={isChecking} />
-          <p className="payment-success-eyebrow">{content.eyebrow}</p>
+          <p className="payment-success-state-label">{content.stateLabel}</p>
           <h1 id="payment-status-title">{content.title}</h1>
           <p className="payment-success-lead">{content.lead}</p>
 
-          {confirmed && result.maskedEmail ? (
+          {displayStatus === "sent" ? (
             <div className="payment-success-email">
-              <span>
-                {displayStatus === "sent" ? "Acceso enviado a" : "Enviaremos el acceso a"}
-              </span>
-              <strong>{result.maskedEmail}</strong>
+              <span>Acceso enviado a tu correo</span>
+              {result.maskedEmail ? <strong>Enviado a {result.maskedEmail}</strong> : null}
             </div>
           ) : null}
 
+          <p className="payment-success-microcopy">
+            Acceso personal <span>·</span> Pago único <span>·</span> Entrega automática
+          </p>
+
           <div className="payment-success-actions">
             {displayStatus === "missing" ? (
+              <ActionLink href="/antes-de-pujar#acceso" primary>
+                Ir al área privada
+              </ActionLink>
+            ) : null}
+
+            {displayStatus === "invalid" ? (
               <>
                 <ActionLink href="/antes-de-pujar#acceso" primary>
                   Ir al área privada
@@ -335,71 +362,42 @@ export function PaymentSuccessExperience({
                 <ActionLink href="/antes-de-pujar">Volver a SubastasPro</ActionLink>
               </>
             ) : null}
-
-            {displayStatus === "invalid" ? (
-              <>
-                <ActionLink href="/antes-de-pujar" primary>
-                  Volver a SubastasPro
-                </ActionLink>
-                <ActionLink href="/antes-de-pujar#acceso">Ir al área privada</ActionLink>
-              </>
-            ) : null}
-
-            {["sent", "delayed", "email_delayed", "email_failed"].includes(
-              displayStatus
-            ) ? (
-              <ActionLink href="/antes-de-pujar#acceso" primary>
-                Ir al área privada
-              </ActionLink>
-            ) : null}
-
-            {[
-              "sent",
-              "email_sending",
-              "email_failed",
-              "email_delayed",
-              "processing",
-              "delayed",
-              "pending",
-              "error"
-            ].includes(displayStatus) ? (
-              <button
-                className="button button-secondary"
-                disabled={isChecking}
-                onClick={refreshStatus}
-                type="button"
-              >
-                {displayStatus === "error" ? "Volver a comprobar" : "Actualizar estado"}
-              </button>
-            ) : null}
           </div>
         </div>
       </section>
 
       <div className="payment-success-content" aria-live="polite">
-        {showProcess ? (
+        {showPurchaseDetails ? (
           <section className="payment-success-progress" aria-labelledby="progress-title">
-            <div className="payment-success-section-heading">
+            <div className="payment-success-section-heading is-centered">
               <p className="payment-success-eyebrow">Estado del acceso</p>
-              <h2 id="progress-title">Todo ocurre de forma automática</h2>
+              <h2 id="progress-title">De la compra al curso, sin pasos extra</h2>
             </div>
+
             <div className="payment-success-steps">
               {PROCESS_STEPS.map((step, index) => {
                 const completed =
-                  index === 0
-                    ? confirmed
-                    : index === 1
-                      ? result.accessCreated === true
-                      : emailStatus === "sent";
+                  index === 0 ? confirmed : index === 1 ? accessCreated : emailStatus === "sent";
                 const active =
-                  (index === 1 && confirmed && result.accessCreated !== true) ||
-                  (index === 2 && ["pending", "sending"].includes(emailStatus));
+                  (index === 0 && !confirmed && ["checking", "pending"].includes(status)) ||
+                  (index === 1 && confirmed && !accessCreated) ||
+                  (index === 2 && accessCreated && ["pending", "sending"].includes(emailStatus));
                 const delayed =
-                  index === 2 &&
-                  ["email_failed", "email_delayed"].includes(displayStatus);
+                  (index === 1 && displayStatus === "delayed") ||
+                  (index === 2 && ["email_failed", "email_delayed"].includes(displayStatus));
+                const stateText = completed
+                  ? "Completado"
+                  : active
+                    ? index === 2
+                      ? "Enviando"
+                      : "En curso"
+                    : delayed
+                      ? "Demora"
+                      : "Pendiente";
 
                 return (
                   <article
+                    aria-current={active ? "step" : undefined}
                     className={`payment-success-step ${completed ? "is-complete" : ""} ${
                       active ? "is-active" : ""
                     } ${delayed ? "is-delayed" : ""}`.trim()}
@@ -408,16 +406,8 @@ export function PaymentSuccessExperience({
                     <div className="payment-success-step-marker">
                       <span>{completed ? "✓" : step.number}</span>
                     </div>
-                    <div>
-                      <p className="payment-success-step-state">
-                        {completed
-                          ? "Completado"
-                          : active
-                            ? "En curso"
-                            : delayed
-                              ? "Demora"
-                              : "Siguiente"}
-                      </p>
+                    <div className="payment-success-step-copy">
+                      <p className="payment-success-step-state">{stateText}</p>
                       <h3>{step.title}</h3>
                       <p>{step.description}</p>
                     </div>
@@ -428,7 +418,32 @@ export function PaymentSuccessExperience({
           </section>
         ) : null}
 
-        {content.panelTitle ? (
+        {isComplete ? (
+          <section className="payment-success-ready" aria-labelledby="ready-title">
+            <div>
+              <p className="payment-success-eyebrow">Acceso disponible</p>
+              <h2 id="ready-title">Todo listo para empezar</h2>
+              <p>
+                Hemos enviado a tu correo el código personal que necesitas para entrar
+                al área privada.
+              </p>
+            </div>
+            <div className="payment-success-ready-action">
+              <ActionLink href="/antes-de-pujar" primary>
+                Entrar a SubastasPro
+              </ActionLink>
+              <div className="payment-success-inbox-note">
+                <strong>¿No ves el correo?</strong>
+                <span>
+                  Revisa spam, promociones o correo no deseado. Puede tardar unos
+                  segundos en aparecer.
+                </span>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        {content.panelTitle && !isComplete ? (
           <section
             className={`payment-success-status-panel status-panel-${displayStatus}`}
             aria-labelledby="status-panel-title"
@@ -438,49 +453,70 @@ export function PaymentSuccessExperience({
               <h2 id="status-panel-title">{content.panelTitle}</h2>
               <p>{content.panelText}</p>
             </div>
-            {["processing", "email_sending"].includes(displayStatus) ? (
-              <div className="payment-success-loading" aria-label="Procesando">
-                <span />
-              </div>
-            ) : null}
+            <div className="payment-success-status-actions">
+              {showLoading ? (
+                <div className="payment-success-loading" aria-label="Procesando">
+                  <span />
+                </div>
+              ) : null}
+              {canRefresh ? (
+                <button
+                  className="button button-secondary"
+                  disabled={isChecking}
+                  onClick={refreshStatus}
+                  type="button"
+                >
+                  Actualizar estado
+                </button>
+              ) : null}
+            </div>
           </section>
         ) : null}
 
-        <section className="payment-success-next" aria-labelledby="next-title">
-          <div className="payment-success-section-heading">
-            <p className="payment-success-eyebrow">Tu recorrido</p>
-            <h2 id="next-title">Qué ocurre ahora</h2>
-          </div>
-          <div className="payment-success-next-grid">
-            {NEXT_STEPS.map((item, index) => (
-              <article key={item}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <p>{item}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+        {showPurchaseDetails ? (
+          <section className="payment-success-value" aria-labelledby="value-title">
+            <div className="payment-success-section-heading">
+              <p className="payment-success-eyebrow">Dentro de SubastasPro</p>
+              <h2 id="value-title">Empieza con ventaja desde el primer módulo</h2>
+            </div>
+            <div className="payment-success-value-grid">
+              {COURSE_VALUE_ITEMS.map((item) => (
+                <article key={item.number}>
+                  <span>{item.number}</span>
+                  <h3>{item.label}</h3>
+                  <p>{item.text}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
-        <section className="payment-success-reassurance" aria-labelledby="reassurance-title">
-          <div>
-            <p className="payment-success-eyebrow">Con total tranquilidad</p>
-            <h2 id="reassurance-title">No necesitas volver a pagar</h2>
-            <p>
-              Si el acceso tarda unos minutos, la compra ya está registrada. El sistema
-              continuará procesándola automáticamente.
-            </p>
-          </div>
-          <ul>
-            <li>El código será personal.</li>
-            <li>El progreso del curso quedará guardado.</li>
-            <li>Podrás volver a entrar con el mismo correo y código.</li>
-          </ul>
-        </section>
+        {showPurchaseDetails ? (
+          <section
+            className="payment-success-reassurance"
+            aria-labelledby="reassurance-title"
+          >
+            <div>
+              <p className="payment-success-eyebrow">Acceso protegido</p>
+              <h2 id="reassurance-title">Tu acceso es personal</h2>
+              <p>
+                Guarda tus credenciales y utiliza siempre los mismos datos para volver
+                al curso.
+              </p>
+            </div>
+            <ul>
+              <li>Utiliza siempre el correo usado durante la compra.</li>
+              <li>Guarda el email con tu código.</li>
+              <li>Tu progreso se conserva en este dispositivo.</li>
+              <li>No necesitas volver a pagar para acceder de nuevo.</li>
+            </ul>
+          </section>
+        ) : null}
       </div>
 
       <footer className="payment-success-footer">
         <span>Ivan Imports</span>
-        <span>SubastasPro</span>
+        <span>SubastasPro · Acceso personal</span>
       </footer>
     </main>
   );
