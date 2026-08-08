@@ -11,3 +11,6 @@ dist
 work/*.log
 outputs/
 work/
+
+# Keep only the optimized landing image in version control.
+public/images/subastaspro-auction-yard.png

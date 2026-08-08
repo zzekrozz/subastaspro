@@ -55,7 +55,7 @@ export function CourseAccessGate({
     <section className="gate-shell">
       <div className="gate-card">
         <p className="pill pill-amber">{BRAND_NAME}</p>
-        <h1>{title}</h1>
+        <h2>{title}</h2>
         <p>{description}</p>
         <div className="gate-fields">
           <label>

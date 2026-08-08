@@ -10,11 +10,11 @@ export const metadata = {
     template: `%s | ${SITE_NAME}`
   },
   description:
-    "Curso práctico e interactivo para aprender a comprar coches en subastas sin ir a ciegas.",
+    "Formación práctica para entender Auto1 y Copart, analizar mejor y evitar errores en subastas de vehículos.",
   openGraph: {
     title: `${SITE_NAME} | ${BRAND_NAME}`,
     description:
-      "Aprende Auto1 y Copart Alemania con un enfoque práctico, mobile first y orientado a evitar errores caros.",
+      "Aprende a moverte en Auto1 y Copart Alemania con un enfoque práctico, directo y orientado a evitar errores.",
     type: "website"
   }
 };

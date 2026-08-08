@@ -1,10 +1,10 @@
 import { LandingPage } from "@/components/landing-page";
-import { FUTURE_PRICE, LAUNCH_PRICE, SITE_NAME } from "@/lib/site-config";
+import { FUTURE_PRICE, LAUNCH_PRICE } from "@/lib/site-config";
 
 export const metadata = {
-  title: SITE_NAME,
+  title: "Curso práctico de subastas de vehículos",
   description:
-    "Curso práctico e interactivo para entender Auto1 y Copart Alemania: filtros, fichas, daños, documentación, pujas, recogida, transporte y errores a evitar.",
+    "Formación práctica para analizar fichas, preparar pujas y entender la operativa de Auto1 y Copart Alemania con más criterio.",
   alternates: {
     canonical: "/antes-de-pujar"
   }
