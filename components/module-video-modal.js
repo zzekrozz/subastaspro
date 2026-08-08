@@ -2,15 +2,8 @@
 
 import { useMemo } from "react";
 
-function buildEmbedUrl({ videoUrl, youtubeId }) {
-  if (videoUrl) {
-    return `${videoUrl}?rel=0&modestbranding=1`;
-  }
-
-  return youtubeId
-    ? `https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0&modestbranding=1`
-    : "";
-}
+import { useExternalContentConsent } from "@/components/cookie-consent-provider";
+import { buildYouTubeNoCookieUrl } from "@/lib/cookie-consent";
 
 export function ModuleVideoModal({
   title,
@@ -20,9 +13,11 @@ export function ModuleVideoModal({
   youtubeId,
   status = "coming-soon"
 }) {
+  const { allowExternalContent, externalContentAllowed } =
+    useExternalContentConsent();
   const isReady = status === "ready" && (videoUrl || youtubeId);
   const embedUrl = useMemo(
-    () => (isReady ? buildEmbedUrl({ videoUrl, youtubeId }) : ""),
+    () => (isReady ? buildYouTubeNoCookieUrl({ videoUrl, youtubeId }) : ""),
     [isReady, videoUrl, youtubeId]
   );
 
@@ -43,7 +38,7 @@ export function ModuleVideoModal({
 
       {duration ? <span className="pill module-video-duration">{duration}</span> : null}
 
-      {isReady ? (
+      {isReady && externalContentAllowed ? (
         <div className="module-video-frame">
           <iframe
             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -53,6 +48,23 @@ export function ModuleVideoModal({
             src={embedUrl}
             title={title}
           />
+        </div>
+      ) : isReady ? (
+        <div className="module-video-consent">
+          <div>
+            <strong>Contenido de YouTube</strong>
+            <p>
+              Para reproducir este vídeo debes permitir contenido externo de
+              YouTube.
+            </p>
+          </div>
+          <button
+            className="button button-secondary"
+            onClick={allowExternalContent}
+            type="button"
+          >
+            Permitir y reproducir
+          </button>
         </div>
       ) : (
         <div className="module-video-actions">

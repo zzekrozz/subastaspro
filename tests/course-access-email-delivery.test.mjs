@@ -194,3 +194,20 @@ test("builds equivalent HTML and text while escaping credentials", () => {
   assert.match(content.text, /SUBASTAS-<CODE>-1234/);
   assert.match(content.text, new RegExp(COURSE_ACCESS_URL));
 });
+
+test("adds a discreet versioned purchase summary to the access email", () => {
+  const content = buildCourseAccessEmail({
+    email: "buyer@example.com",
+    code: "SUBASTAS-ABCD-1234",
+    purchaseSummary: {
+      purchasedAt: "2026-08-07T12:00:00.000Z",
+      termsVersion: "2026-08-07",
+      immediateAccessRequested: true
+    }
+  });
+
+  assert.match(content.html, /Resumen de tu compra/);
+  assert.match(content.html, /versión 2026-08-07/);
+  assert.match(content.text, /Acceso mínimo garantizado: 18 meses/);
+  assert.match(content.text, /Solicitaste acceso inmediato/);
+});

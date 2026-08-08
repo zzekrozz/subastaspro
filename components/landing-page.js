@@ -12,9 +12,10 @@ import {
 import {
   BRAND_NAME,
   PRICE_COPY,
-  PRIVATE_ROUTE,
-  STRIPE_PAYMENT_LINK
+  PRIVATE_ROUTE
 } from "@/lib/site-config";
+
+const PURCHASE_ROUTE = "/comprar";
 
 function CardGrid({ items, className = "" }) {
   return (
@@ -39,7 +40,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
         </div>
         <a
           className="button button-secondary button-small"
-          href={STRIPE_PAYMENT_LINK}
+          href={PURCHASE_ROUTE}
         >
           Acceso fundador
         </a>
@@ -67,7 +68,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
             <div className="hero-actions">
               <a
                 className="button button-primary"
-                href={STRIPE_PAYMENT_LINK}
+                href={PURCHASE_ROUTE}
               >
                 Quiero acceso fundador
               </a>
@@ -86,7 +87,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
             <p>{PRICE_COPY}</p>
             <a
               className="button button-primary"
-              href={STRIPE_PAYMENT_LINK}
+              href={PURCHASE_ROUTE}
             >
               Comprar acceso
             </a>
@@ -255,7 +256,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
             </ul>
             <a
               className="button button-primary"
-              href={STRIPE_PAYMENT_LINK}
+              href={PURCHASE_ROUTE}
             >
               Quiero acceso fundador
             </a>
@@ -287,7 +288,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
           <div className="hero-actions centered">
             <a
               className="button button-primary"
-              href={STRIPE_PAYMENT_LINK}
+              href={PURCHASE_ROUTE}
             >
               Quiero acceso fundador
             </a>

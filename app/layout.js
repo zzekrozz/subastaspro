@@ -1,5 +1,7 @@
 import "./globals.css";
 
+import { CookieConsentProvider } from "@/components/cookie-consent-provider";
+import { LegalFooter } from "@/components/legal-footer";
 import { BRAND_NAME, SITE_NAME } from "@/lib/site-config";
 
 export const metadata = {
@@ -20,7 +22,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body>
+        <CookieConsentProvider>
+          {children}
+          <LegalFooter />
+        </CookieConsentProvider>
+      </body>
     </html>
   );
 }
