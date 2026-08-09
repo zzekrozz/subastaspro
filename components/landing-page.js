@@ -158,7 +158,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
         <div className="content-frame">
           <SectionIntro
             eyebrow="El programa"
-            title="11 módulos. Tres bloques. Una secuencia con sentido."
+            title="16 módulos. Tres bloques. Una secuencia con sentido."
             description="Primero entiendes el terreno. Después recorres Auto1 y Copart desde la búsqueda hasta la recogida."
           />
           <div className="sales-program-list">
@@ -292,7 +292,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
             </div>
             <p className="sales-tax-copy">35,09 € IVA incluido en España</p>
             <ul>
-              <li>11 módulos sobre Auto1 y Copart</li>
+              <li>16 módulos sobre fundamentos, Auto1 y Copart</li>
               <li>Vídeos y herramientas dentro del curso</li>
               <li>Checklist descargable</li>
               <li>Acceso mínimo garantizado de 18 meses</li>

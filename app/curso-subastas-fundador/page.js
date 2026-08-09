@@ -1,14 +1,7 @@
-import { CourseExperience } from "@/components/course-experience";
-import { SITE_NAME } from "@/lib/site-config";
+import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: `Area privada ${SITE_NAME}`,
-  robots: {
-    index: false,
-    follow: false
-  }
-};
+import { PRIVATE_ROUTE } from "@/lib/site-config";
 
-export default function CursoSubastasFundadorPage() {
-  return <CourseExperience />;
+export default function LegacyCoursePage() {
+  redirect(PRIVATE_ROUTE);
 }

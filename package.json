@@ -10,6 +10,7 @@
     "lint": "next lint",
     "test:email": "node --test tests/course-access-email-delivery.test.mjs",
     "test:legal": "node --test tests/legal-consent.test.mjs",
+    "test:course": "node --test tests/course-product.test.mjs",
     "generate:pdf": "node ./scripts/generate-pdf.mjs"
   },
   "dependencies": {

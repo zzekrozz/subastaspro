@@ -40,5 +40,5 @@ export function proxy(request) {
 }
 
 export const config = {
-  matcher: ["/curso-subastas-fundador/:path*", "/checklist-subastas-pdf"]
+  matcher: ["/curso/:path*", "/curso-subastas-fundador/:path*", "/checklist-subastas-pdf"]
 };

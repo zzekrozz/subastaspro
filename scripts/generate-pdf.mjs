@@ -3,210 +3,95 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 
-import {
-  auto1ChecklistItems,
-  copartAvoidItems,
-  copartKeys,
-  pickupChecklistItems
-} from "../lib/course-content.js";
+import { finalChecklistGroups } from "../lib/course-content.js";
 
 const require = createRequire(import.meta.url);
 const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outputPath = path.resolve(
-  __dirname,
-  "../public/downloads/checklist-subastas-antes-de-pujar.pdf"
-);
+const outputPath = path.resolve(__dirname, "../public/downloads/checklist-subastas-antes-de-pujar.pdf");
+const PAGE = { width: 595.28, height: 841.89, marginX: 48, top: 54, bottom: 48 };
 
-const pageWidth = 595.28;
-const pageHeight = 841.89;
-const marginX = 48;
-const topMargin = 54;
-const bottomMargin = 44;
-const lineHeight = 15;
-
-function wrapText(text, maxChars = 74) {
-  const words = text.split(" ");
+function wrapText(text, maxChars = 76) {
   const lines = [];
-  let currentLine = "";
+  let current = "";
 
-  for (const word of words) {
-    const nextLine = currentLine ? `${currentLine} ${word}` : word;
-    if (nextLine.length > maxChars) {
-      lines.push(currentLine);
-      currentLine = word;
+  for (const word of text.split(" ")) {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length > maxChars && current) {
+      lines.push(current);
+      current = word;
     } else {
-      currentLine = nextLine;
+      current = next;
     }
   }
 
-  if (currentLine) {
-    lines.push(currentLine);
-  }
-
+  if (current) lines.push(current);
   return lines;
 }
 
-function sectionToLines() {
-  const lines = [];
-
-  lines.push({ type: "title", text: "Checklist de Subastas: Antes de Pujar" });
-  lines.push({
-    type: "body",
-    text: "Guia de repaso rapido para registro, revision de fichas, pujas y recogidas."
-  });
-  lines.push({ type: "spacer" });
-
-  lines.push({ type: "section", text: "1. Documentos para registrarte" });
-  lines.push({ type: "bullet", text: "Autonomo: DNI, IAE, direccion" });
-  lines.push({
-    type: "bullet",
-    text: "Empresa: CIF, IAE, direccion y a veces escrituras"
-  });
-  lines.push({ type: "spacer" });
-
-  lines.push({ type: "section", text: "2. Checklist Auto1" });
-  auto1ChecklistItems.forEach((item) => lines.push({ type: "bullet", text: item }));
-  lines.push({ type: "spacer" });
-
-  lines.push({ type: "section", text: "3. Regla 15:00 Auto1" });
-  lines.push({
-    type: "body",
-    text: "Para recoger al dia siguiente, normalmente hay que seleccionar la recogida antes de las 15:00."
-  });
-  lines.push({ type: "spacer" });
-
-  lines.push({ type: "section", text: "4. Recogida Auto1" });
-  pickupChecklistItems.forEach((item) => lines.push({ type: "bullet", text: item }));
-  lines.push({ type: "spacer" });
-
-  lines.push({ type: "section", text: "5. Claves Copart" });
-  copartKeys.forEach((item) =>
-    lines.push({
-      type: "bullet",
-      text: `${item.term}: ${item.description}`
-    })
-  );
-  lines.push({ type: "spacer" });
-
-  lines.push({ type: "section", text: "6. Coches que evitar en Copart" });
-  copartAvoidItems.forEach((item) => lines.push({ type: "bullet", text: item }));
-  lines.push({ type: "spacer" });
-
-  lines.push({ type: "section", text: "7. Optimo vs maximo" });
-  lines.push({
-    type: "bullet",
-    text: "Define tu precio optimo antes de entrar en la subasta."
-  });
-  lines.push({
-    type: "bullet",
-    text: "Define tu precio maximo absoluto sin moverlo en caliente."
-  });
-  lines.push({
-    type: "bullet",
-    text: "No superes el maximo aunque falten 100 euros."
-  });
-  lines.push({ type: "spacer" });
-
-  lines.push({ type: "section", text: "Frases destacadas" });
-  lines.push({ type: "quote", text: "El precio de puja no es el coste real." });
-  lines.push({
-    type: "quote",
-    text: "En subasta no compras informacion perfecta, compras informacion suficiente para decidir."
-  });
-  lines.push({
-    type: "quote",
-    text: "La subasta no te arruina de golpe, te arruina de 100 en 100."
-  });
-  lines.push({ type: "quote", text: "Si no compras ese coche, compraras otro." });
-
-  return lines;
+function addPage(pdf) {
+  const page = pdf.addPage([PAGE.width, PAGE.height]);
+  page.drawRectangle({ x: 0, y: 0, width: PAGE.width, height: PAGE.height, color: rgb(0.965, 0.955, 0.93) });
+  page.drawRectangle({ x: 0, y: PAGE.height - 8, width: PAGE.width, height: 8, color: rgb(0.95, 0.59, 0.12) });
+  return page;
 }
 
-function drawWrappedLine(page, font, boldFont, item, startY) {
-  const fontSize =
-    item.type === "title" ? 22 : item.type === "section" ? 13 : 11;
-  const activeFont =
-    item.type === "title" || item.type === "section" ? boldFont : font;
-  const color =
-    item.type === "title" || item.type === "section"
-      ? rgb(0.13, 0.13, 0.13)
-      : item.type === "quote"
-        ? rgb(0.45, 0.27, 0.02)
-        : rgb(0.22, 0.22, 0.22);
-  const prefix = item.type === "bullet" ? "• " : item.type === "quote" ? "“" : "";
-  const suffix = item.type === "quote" ? "”" : "";
-  const indent = item.type === "bullet" ? 14 : item.type === "quote" ? 8 : 0;
-  const wrapped = wrapText(`${prefix}${item.text}${suffix}`, item.type === "title" ? 42 : 78);
-
-  wrapped.forEach((line, index) => {
-    page.drawText(line, {
-      x: marginX + indent,
-      y: startY - index * lineHeight,
-      size: fontSize,
-      font: activeFont,
-      color
-    });
-  });
-
-  return wrapped.length * lineHeight + (item.type === "title" ? 10 : 4);
+function drawLines(page, lines, { x, y, font, size = 10.5, color = rgb(0.15, 0.15, 0.14), lineHeight = 14 }) {
+  lines.forEach((line, index) => page.drawText(line, { x, y: y - index * lineHeight, font, size, color }));
+  return lines.length * lineHeight;
 }
 
 async function buildPdf() {
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
-
   const pdf = await PDFDocument.create();
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const items = sectionToLines();
+  let page = addPage(pdf);
+  let y = PAGE.height - PAGE.top;
 
-  let page = pdf.addPage([pageWidth, pageHeight]);
-  let cursorY = pageHeight - topMargin;
+  y -= drawLines(page, ["SUBASTASPRO"], { x: PAGE.marginX, y, font: bold, size: 11, color: rgb(0.72, 0.38, 0.03) });
+  y -= 10;
+  y -= drawLines(page, wrapText("Checklist operativo antes de pujar", 42), { x: PAGE.marginX, y, font: bold, size: 23, lineHeight: 27 });
+  y -= 8;
+  y -= drawLines(page, wrapText("Ficha, coste, puja, documentacion, pago y recogida en una sola rutina de comprobacion."), { x: PAGE.marginX, y, font: regular, size: 10.5, color: rgb(0.34, 0.33, 0.3) });
+  y -= 18;
 
-  page.drawRectangle({
-    x: 0,
-    y: 0,
-    width: pageWidth,
-    height: pageHeight,
-    color: rgb(0.985, 0.97, 0.94)
-  });
-
-  for (const item of items) {
-    if (item.type === "spacer") {
-      cursorY -= 8;
-      continue;
+  for (const [groupIndex, group] of finalChecklistGroups.entries()) {
+    const estimated = 38 + group.items.reduce((sum, item) => sum + wrapText(item, 68).length * 14 + 5, 0);
+    if (y - estimated < PAGE.bottom) {
+      page = addPage(pdf);
+      y = PAGE.height - PAGE.top;
     }
 
-    const estimatedHeight =
-      wrapText(item.text, item.type === "title" ? 42 : 78).length * lineHeight + 24;
+    page.drawText(String(groupIndex + 1).padStart(2, "0"), { x: PAGE.marginX, y, font: bold, size: 10, color: rgb(0.72, 0.38, 0.03) });
+    y -= drawLines(page, [group.title.toUpperCase()], { x: PAGE.marginX + 30, y, font: bold, size: 12.5 });
+    y -= 10;
 
-    if (cursorY - estimatedHeight < bottomMargin) {
-      page = pdf.addPage([pageWidth, pageHeight]);
-      page.drawRectangle({
-        x: 0,
-        y: 0,
-        width: pageWidth,
-        height: pageHeight,
-        color: rgb(0.985, 0.97, 0.94)
-      });
-      cursorY = pageHeight - topMargin;
+    for (const item of group.items) {
+      page.drawRectangle({ x: PAGE.marginX + 30, y: y - 1, width: 8, height: 8, borderWidth: 1, borderColor: rgb(0.55, 0.53, 0.48) });
+      const lines = wrapText(item, 68);
+      y -= drawLines(page, lines, { x: PAGE.marginX + 48, y: y + 7, font: regular });
+      y -= 5;
     }
-
-    cursorY -= drawWrappedLine(page, regular, bold, item, cursorY);
+    y -= 13;
   }
 
-  page.drawText("Ivan Imports · Antes de Pujar", {
-    x: marginX,
-    y: 18,
-    size: 9,
-    font: regular,
-    color: rgb(0.45, 0.45, 0.45)
+  const footer = "Comprueba siempre las condiciones oficiales vigentes de cada plataforma antes de operar.";
+  if (y - 44 < PAGE.bottom) {
+    page = addPage(pdf);
+    y = PAGE.height - PAGE.top;
+  }
+  page.drawRectangle({ x: PAGE.marginX, y: y - 28, width: PAGE.width - PAGE.marginX * 2, height: 42, color: rgb(0.91, 0.89, 0.84) });
+  drawLines(page, wrapText(footer, 72), { x: PAGE.marginX + 14, y: y - 2, font: bold, size: 9.5, color: rgb(0.26, 0.25, 0.22), lineHeight: 12 });
+
+  const pages = pdf.getPages();
+  pages.forEach((pdfPage, index) => {
+    const footerText = `SubastasPro · ${index + 1}/${pages.length}`;
+    const footerWidth = regular.widthOfTextAtSize(footerText, 8.5);
+    pdfPage.drawText(footerText, { x: (PAGE.width - footerWidth) / 2, y: 20, font: regular, size: 8.5, color: rgb(0.45, 0.44, 0.4) });
   });
 
-  const bytes = await pdf.save();
-  await fs.writeFile(outputPath, bytes);
-
+  await fs.writeFile(outputPath, await pdf.save());
   console.log(outputPath);
 }
 

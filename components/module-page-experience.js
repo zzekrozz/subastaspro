@@ -4,21 +4,25 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { CourseImageBlock } from "@/components/course-image-block";
+import { CourseLearningVisual } from "@/components/course-learning-visuals";
 import { CourseLogoutButton } from "@/components/course-logout-button";
 import { ModuleVideoModal } from "@/components/module-video-modal";
-import { courseModules, getModulePath } from "@/lib/course-content";
-import {
-  BRAND_NAME,
-  PDF_DOWNLOAD_PATH,
-  PRIVATE_ROUTE,
-  WHATSAPP_SUPPORT_MESSAGE,
-  buildWhatsAppUrl
-} from "@/lib/site-config";
+import { courseModules, courseSections, getModulePath } from "@/lib/course-content";
 import {
   loadCompletedModules,
+  normalizeCompletedModules,
   saveCompletedModules,
   toggleCompletedModule
 } from "@/lib/course-state";
+import {
+  PDF_DOWNLOAD_PATH,
+  PRIVATE_ROUTE,
+  SITE_NAME,
+  WHATSAPP_SUPPORT_MESSAGE,
+  buildWhatsAppUrl
+} from "@/lib/site-config";
+
+const moduleIds = courseModules.map((item) => item.id);
 
 function ContentBlock({ label, text, tone }) {
   return (
@@ -33,8 +37,11 @@ function ModuleVideoBlock({ module }) {
   if (!module.video) return null;
 
   return (
-    <section className="module-section-card">
-      <h2>Vídeo del módulo</h2>
+    <section className="module-section-card module-video-section">
+      <header className="module-section-heading">
+        <p>Contenido audiovisual</p>
+        <h2>Vídeo del módulo</h2>
+      </header>
       <ModuleVideoModal
         description={module.video.description}
         duration={module.video.duration}
@@ -50,8 +57,7 @@ function ModuleVideoBlock({ module }) {
 function SectionImagesBlock({ images }) {
   if (!images?.length) return null;
 
-  const countClass =
-    images.length === 1 ? "count-1" : images.length === 2 ? "count-2" : "count-3-plus";
+  const countClass = images.length === 1 ? "count-1" : images.length === 2 ? "count-2" : "count-3-plus";
 
   return (
     <div className={`course-image-grid ${countClass}`}>
@@ -70,13 +76,25 @@ function SectionImagesBlock({ images }) {
   );
 }
 
+function SectionVisuals({ visuals }) {
+  if (!visuals?.length) return null;
+
+  return (
+    <div className="module-visual-stack">
+      {visuals.map((visual, index) => (
+        <CourseLearningVisual key={`${visual.type}-${visual.title}-${index}`} visual={visual} />
+      ))}
+    </div>
+  );
+}
+
 export function ModulePageExperience({ module }) {
   const supportUrl = buildWhatsAppUrl(WHATSAPP_SUPPORT_MESSAGE);
   const [ready, setReady] = useState(false);
   const [completedModules, setCompletedModules] = useState([]);
 
   useEffect(() => {
-    setCompletedModules(loadCompletedModules());
+    setCompletedModules(normalizeCompletedModules(loadCompletedModules(), moduleIds));
     setReady(true);
   }, []);
 
@@ -87,8 +105,8 @@ export function ModulePageExperience({ module }) {
 
   const moduleIndex = courseModules.findIndex((item) => item.id === module.id);
   const previousModule = moduleIndex > 0 ? courseModules[moduleIndex - 1] : null;
-  const nextModule =
-    moduleIndex < courseModules.length - 1 ? courseModules[moduleIndex + 1] : null;
+  const nextModule = moduleIndex < courseModules.length - 1 ? courseModules[moduleIndex + 1] : null;
+  const courseSection = courseSections.find((section) => section.moduleIds.includes(module.id));
   const isCompleted = useMemo(
     () => completedModules.includes(module.id),
     [completedModules, module.id]
@@ -103,113 +121,87 @@ export function ModulePageExperience({ module }) {
   }
 
   return (
-    <main className="site-shell module-page-shell">
-      <header className="topbar">
-        <div className="brand-lockup">
-          <span className="brand-mark">{BRAND_NAME}</span>
-          <span className="brand-divider">/</span>
-          <span className="brand-course">Antes de Pujar</span>
-        </div>
-        <div className="header-actions">
+    <main className="site-shell module-page-shell course-module-page">
+      <header className="topbar course-topbar">
+        <Link className="course-brand" href={PRIVATE_ROUTE} aria-label="Volver al dashboard de SubastasPro">
+          <span>SP</span>
+          <div>
+            <strong>{SITE_NAME}</strong>
+            <small>Área privada</small>
+          </div>
+        </Link>
+        <div className="header-actions course-header-actions">
           <Link className="button button-secondary button-small" href={PRIVATE_ROUTE}>
             Volver al curso
           </Link>
-          <a
-            className="button button-secondary button-small"
-            download
-            href={PDF_DOWNLOAD_PATH}
-            target="_blank"
-          >
-            Descargar PDF
+          <a className="button button-secondary button-small" download href={PDF_DOWNLOAD_PATH}>
+            Checklist PDF
           </a>
-          <a
-            className="button button-primary button-small"
-            href={supportUrl}
-            rel="noreferrer"
-            target="_blank"
-          >
-            WhatsApp soporte
+          <a className="button button-primary button-small" href={supportUrl} rel="noreferrer" target="_blank">
+            Soporte
           </a>
           <CourseLogoutButton />
         </div>
       </header>
 
-      <section className="module-hero">
+      <section className={`module-hero ${module.platform ? `is-${module.platform.toLowerCase()}` : ""}`}>
         <div className="content-frame module-hero-grid">
           <div className="module-hero-copy">
-            <p className="section-eyebrow">Módulo {moduleIndex + 1}</p>
+            <div className="module-breadcrumb">
+              <span>{courseSection ? `Bloque ${courseSection.number}` : "Aplicación"}</span>
+              <i aria-hidden="true" />
+              <span>Módulo {String(moduleIndex + 1).padStart(2, "0")}</span>
+            </div>
             <h1>{module.title}</h1>
             <p className="lead">{module.summary}</p>
-
             <div className="module-hero-chips">
-              <span className="pill">Duración: {module.duration}</span>
-              <span className="pill">Objetivos: {module.learning.length}</span>
-              <span className="pill">Nivel: práctico</span>
-            </div>
-
-            <div className="module-meta-card module-learning-card">
-              <p className="eyebrow-label">En este módulo aprenderás</p>
-              <ul className="inline-list module-learning-list">
-                {module.learning.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+              <span className="pill">{module.duration}</span>
+              <span className="pill">{module.learning.length} objetivos</span>
+              {module.platform ? <span className="pill">{module.platform}</span> : null}
             </div>
           </div>
 
-          <aside className="module-meta-card module-hero-sidecard">
-            <p className="eyebrow-label">Resumen rápido</p>
-            <strong>{module.duration}</strong>
-            <p className="module-sidecard-copy">
-              {module.learning.length} objetivos clave para avanzar con criterio y sin ir a
-              ciegas.
-            </p>
-            <ul className="inline-list module-sidecard-list">
+          <aside className="module-objectives-panel">
+            <p className="eyebrow-label">En este módulo</p>
+            <ul>
               {module.learning.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
           </aside>
         </div>
+        {courseSection?.independenceNote ? (
+          <div className="content-frame">
+            <p className="module-platform-notice">{courseSection.independenceNote}</p>
+          </div>
+        ) : null}
       </section>
 
-      <section className="section-block">
+      <section className="section-block module-reading-section">
         <div className="content-frame module-content-grid">
           <div className="module-longform">
             <ModuleVideoBlock module={module} />
-            {module.sections.map((section) => (
-              <article className="module-section-card" key={section.title}>
-                <h2>{section.title}</h2>
-                {section.paragraphs?.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
+            {module.sections.map((section, sectionIndex) => (
+              <article className="module-section-card" key={`${section.title}-${sectionIndex}`}>
+                <header className="module-section-heading">
+                  <p>{String(sectionIndex + 1).padStart(2, "0")} · Contenido</p>
+                  <h2>{section.title}</h2>
+                </header>
+                {section.paragraphs?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
                 {section.bullets?.length ? (
-                  <ul className="inline-list">
-                    {section.bullets.map((bullet) => (
-                      <li key={bullet}>{bullet}</li>
-                    ))}
+                  <ul className="inline-list module-bullet-list">
+                    {section.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}
                   </ul>
                 ) : null}
+                <SectionVisuals visuals={section.visuals} />
                 {section.callout ? (
-                  <ContentBlock
-                    label={section.callout.label}
-                    text={section.callout.text}
-                    tone={section.callout.tone}
-                  />
+                  <ContentBlock label={section.callout.label} text={section.callout.text} tone={section.callout.tone} />
                 ) : null}
                 {section.alert ? (
-                  <ContentBlock
-                    label={section.alert.label}
-                    text={section.alert.text}
-                    tone={section.alert.tone}
-                  />
+                  <ContentBlock label={section.alert.label} text={section.alert.text} tone={section.alert.tone} />
                 ) : null}
                 {section.example ? (
-                  <ContentBlock
-                    label={section.example.title}
-                    text={section.example.text}
-                    tone="example"
-                  />
+                  <ContentBlock label={section.example.title} text={section.example.text} tone="example" />
                 ) : null}
                 <SectionImagesBlock images={section.images} />
               </article>
@@ -217,17 +209,22 @@ export function ModulePageExperience({ module }) {
           </div>
 
           <aside className="module-sidebar">
-            <div className="module-sticky-card">
-              <p className="eyebrow-label">Frase importante</p>
+            <div className="module-sticky-card module-quote-card">
+              <p className="eyebrow-label">Idea para recordar</p>
               <blockquote>{module.quote}</blockquote>
             </div>
             <div className="module-sticky-card">
-              <p className="eyebrow-label">Mini checklist del módulo</p>
-              <ul className="inline-list">
-                {module.miniChecklist.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
+              <p className="eyebrow-label">Checklist del módulo</p>
+              <ul className="inline-list module-sidebar-checklist">
+                {module.miniChecklist.map((item) => <li key={item}>{item}</li>)}
               </ul>
+            </div>
+            <div className={`module-sticky-card module-state-card ${isCompleted ? "is-complete" : ""}`}>
+              <p className="eyebrow-label">Tu progreso</p>
+              <strong>{isCompleted ? "Módulo completado" : "Módulo pendiente"}</strong>
+              <button className={`button ${isCompleted ? "button-secondary" : "button-primary"}`} onClick={handleToggleComplete} type="button">
+                {isCompleted ? "Marcar como pendiente" : "Marcar como completado"}
+              </button>
             </div>
           </aside>
         </div>
@@ -236,25 +233,18 @@ export function ModulePageExperience({ module }) {
       <section className="section-block module-footer-block">
         <div className="content-frame module-footer-card">
           <div>
-            <p className="eyebrow-label">Estado del módulo</p>
-            <strong>{isCompleted ? "Completado" : "Pendiente"}</strong>
+            <p className="eyebrow-label">Navegación</p>
+            <strong>Módulo {moduleIndex + 1} de {courseModules.length}</strong>
           </div>
           <div className="module-footer-actions">
-            <button
-              className={`button ${isCompleted ? "button-secondary" : "button-primary"}`}
-              onClick={handleToggleComplete}
-              type="button"
-            >
-              {isCompleted ? "Marcar como pendiente" : "Marcar módulo como completado"}
-            </button>
-            <Link className="button button-secondary" href={PRIVATE_ROUTE}>
-              Volver al curso
-            </Link>
             {previousModule ? (
               <Link className="button button-secondary" href={getModulePath(previousModule.slug)}>
                 Módulo anterior
               </Link>
             ) : null}
+            <Link className="button button-secondary" href={PRIVATE_ROUTE}>
+              Ver dashboard
+            </Link>
             {nextModule ? (
               <Link className="button button-primary" href={getModulePath(nextModule.slug)}>
                 Siguiente módulo

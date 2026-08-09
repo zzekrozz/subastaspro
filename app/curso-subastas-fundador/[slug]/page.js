@@ -1,41 +1,12 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
-import { ModulePageExperience } from "@/components/module-page-experience";
-import { courseModules, getModuleBySlug } from "@/lib/course-content";
-import { SITE_NAME } from "@/lib/site-config";
+import { getModuleBySlug, getModulePath } from "@/lib/course-content";
 
-export function generateStaticParams() {
-  return courseModules.map((module) => ({
-    slug: module.slug
-  }));
-}
+export default async function LegacyCourseModulePage({ params }) {
+  const { slug } = await params;
+  const module = getModuleBySlug(slug);
 
-export async function generateMetadata({ params }) {
-  const resolvedParams = await params;
-  const module = getModuleBySlug(resolvedParams.slug);
+  if (!module) notFound();
 
-  if (!module) {
-    return {
-      title: "Módulo no encontrado"
-    };
-  }
-
-  return {
-    title: `${module.title} | ${SITE_NAME}`,
-    robots: {
-      index: false,
-      follow: false
-    }
-  };
-}
-
-export default async function CourseModulePage({ params }) {
-  const resolvedParams = await params;
-  const module = getModuleBySlug(resolvedParams.slug);
-
-  if (!module) {
-    notFound();
-  }
-
-  return <ModulePageExperience module={module} />;
+  redirect(getModulePath(module.slug));
 }
