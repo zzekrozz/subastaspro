@@ -2639,6 +2639,15 @@ summary:hover {
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
 }
 
+.module-video-list {
+  display: grid;
+  gap: 24px;
+}
+
+.module-video-list .module-video-card {
+  margin-top: 0;
+}
+
 .module-video-card.is-ready {
   border-color: rgba(245, 166, 35, 0.24);
 }

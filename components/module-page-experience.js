@@ -34,22 +34,33 @@ function ContentBlock({ label, text, tone }) {
 }
 
 function ModuleVideoBlock({ module }) {
-  if (!module.video) return null;
+  const videos = module.videos?.length
+    ? module.videos
+    : module.video
+      ? [module.video]
+      : [];
+
+  if (!videos.length) return null;
 
   return (
     <section className="module-section-card module-video-section">
       <header className="module-section-heading">
         <p>Contenido audiovisual</p>
-        <h2>Vídeo del módulo</h2>
+        <h2>{videos.length > 1 ? "Vídeos del módulo" : "Vídeo del módulo"}</h2>
       </header>
-      <ModuleVideoModal
-        description={module.video.description}
-        duration={module.video.duration}
-        status={module.video.status}
-        title={module.video.title}
-        videoUrl={module.video.videoUrl}
-        youtubeId={module.video.youtubeId}
-      />
+      <div className="module-video-list">
+        {videos.map((video, index) => (
+          <ModuleVideoModal
+            description={video.description}
+            duration={video.duration}
+            key={video.youtubeId || video.videoUrl || `${module.id}-video-${index}`}
+            status={video.status}
+            title={video.title}
+            videoUrl={video.videoUrl}
+            youtubeId={video.youtubeId}
+          />
+        ))}
+      </div>
     </section>
   );
 }
