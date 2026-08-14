@@ -1,4 +1,8 @@
 import { PurchaseConsentExperience } from "@/components/purchase-consent-experience";
+import {
+  resolveSubastasProPaymentLink,
+  SUBASTASPRO_STRIPE_PAYMENT_LINK
+} from "@/lib/subastaspro-product";
 
 export const metadata = {
   title: "Comprar SubastasPro",
@@ -7,6 +11,9 @@ export const metadata = {
 };
 
 export default function ComprarPage() {
-  return <PurchaseConsentExperience />;
-}
+  const paymentLink =
+    resolveSubastasProPaymentLink(process.env.STRIPE_PAYMENT_LINK) ||
+    SUBASTASPRO_STRIPE_PAYMENT_LINK;
 
+  return <PurchaseConsentExperience paymentLink={paymentLink} />;
+}

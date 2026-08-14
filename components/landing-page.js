@@ -24,7 +24,7 @@ function SectionIntro({ eyebrow, title, description, align = "left" }) {
   );
 }
 
-export function LandingPage({ launchPrice, futurePrice }) {
+export function LandingPage({ priceExVat, priceWithVatEs }) {
   return (
     <main className="site-shell sales-page">
       <header className="sales-topbar">
@@ -57,8 +57,8 @@ export function LandingPage({ launchPrice, futurePrice }) {
             <p className="sales-eyebrow">Formación práctica para subastas de vehículos</p>
             <h1>SubastasPro</h1>
             <p className="sales-hero-statement">
-              Aprende a moverte en Auto1 y Copart con criterio antes de poner
-              dinero sobre la mesa.
+              Aprende a comprar en subastas evitando errores que pueden costarte
+              mucho más que el precio de acceso.
             </p>
             <p className="sales-hero-description">
               Una ruta directa para filtrar mejor, leer fichas, entender daños y
@@ -72,7 +72,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
             </div>
             <div className="sales-hero-actions">
               <a className="button button-primary" href={PURCHASE_ROUTE}>
-                Acceder a SubastasPro
+                Comprar SubastasPro
               </a>
               <a className="button button-secondary" href="#programa">
                 Ver el programa
@@ -80,11 +80,11 @@ export function LandingPage({ launchPrice, futurePrice }) {
             </div>
             <div className="sales-hero-proof" aria-label="Precio y condiciones de acceso">
               <div>
-                <strong>{launchPrice} € + IVA</strong>
+                <strong>{priceExVat} € + IVA</strong>
                 <span>Pago único</span>
               </div>
               <div>
-                <strong>35,09 €</strong>
+                <strong>{priceWithVatEs} €</strong>
                 <span>IVA incluido en España</span>
               </div>
               <div>
@@ -280,17 +280,16 @@ export function LandingPage({ launchPrice, futurePrice }) {
             <p className="sales-eyebrow">Acceso personal · Pago único</p>
             <h2>Una mala decisión puede costar más que toda la formación.</h2>
             <p>{PRICE_COPY}</p>
-            <p className="sales-future-price">
-              Precio de referencia futuro para una versión ampliada: {futurePrice} € + IVA.
-            </p>
           </div>
           <div className="sales-price-panel">
             <p>SubastasPro</p>
             <div className="sales-price">
-              <strong>{launchPrice} €</strong>
+              <strong>{priceExVat} €</strong>
               <span>+ IVA</span>
             </div>
-            <p className="sales-tax-copy">35,09 € IVA incluido en España</p>
+            <p className="sales-tax-copy">
+              {priceWithVatEs} € IVA incluido en España
+            </p>
             <ul>
               <li>16 módulos sobre fundamentos, Auto1 y Copart</li>
               <li>Vídeos y herramientas dentro del curso</li>
@@ -350,7 +349,7 @@ export function LandingPage({ launchPrice, futurePrice }) {
             próxima puja.
           </p>
           <a className="button button-primary" href={PURCHASE_ROUTE}>
-            Acceder a SubastasPro
+            Comprar SubastasPro
           </a>
         </div>
       </section>

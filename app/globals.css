@@ -5462,12 +5462,6 @@ summary:hover {
   max-width: 700px;
 }
 
-.sales-pricing-copy .sales-future-price {
-  margin-top: 14px;
-  color: #7f7c76;
-  font-size: 0.8rem;
-}
-
 .sales-price-panel {
   display: grid;
   padding: 32px;

@@ -1,5 +1,8 @@
 import { LandingPage } from "@/components/landing-page";
-import { FUTURE_PRICE, LAUNCH_PRICE } from "@/lib/site-config";
+import {
+  SUBASTASPRO_PRICE_EX_VAT,
+  SUBASTASPRO_PRICE_WITH_VAT_ES
+} from "@/lib/site-config";
 
 export const metadata = {
   title: "Curso práctico de subastas de vehículos",
@@ -11,5 +14,10 @@ export const metadata = {
 };
 
 export default function AntesDePujarLandingPage() {
-  return <LandingPage launchPrice={LAUNCH_PRICE} futurePrice={FUTURE_PRICE} />;
+  return (
+    <LandingPage
+      priceExVat={SUBASTASPRO_PRICE_EX_VAT}
+      priceWithVatEs={SUBASTASPRO_PRICE_WITH_VAT_ES}
+    />
+  );
 }

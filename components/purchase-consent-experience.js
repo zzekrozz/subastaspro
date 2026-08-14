@@ -4,9 +4,12 @@ import { useState } from "react";
 
 import { LEGAL_ACCEPTANCE_TEXTS, LEGAL_ROUTES } from "@/lib/legal-config";
 import { buildPurchaseCheckoutUrl } from "@/lib/purchase-consent-core";
-import { STRIPE_PAYMENT_LINK } from "@/lib/site-config";
+import {
+  SUBASTASPRO_PRICE_EX_VAT,
+  SUBASTASPRO_PRICE_WITH_VAT_ES
+} from "@/lib/site-config";
 
-export function PurchaseConsentExperience() {
+export function PurchaseConsentExperience({ paymentLink }) {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [immediateAccessRequested, setImmediateAccessRequested] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -34,7 +37,7 @@ export function PurchaseConsentExperience() {
       }
 
       window.location.assign(
-        buildPurchaseCheckoutUrl(STRIPE_PAYMENT_LINK, body.purchaseConsentId)
+        buildPurchaseCheckoutUrl(paymentLink, body.purchaseConsentId)
       );
     } catch {
       setError(
@@ -64,8 +67,8 @@ export function PurchaseConsentExperience() {
             subastas de vehículos.
           </p>
           <div className="purchase-price">
-            <strong>29 € + IVA</strong>
-            <span>35,09 € IVA incluido en España</span>
+            <strong>{SUBASTASPRO_PRICE_EX_VAT} € + IVA</strong>
+            <span>{SUBASTASPRO_PRICE_WITH_VAT_ES} € IVA incluido en España</span>
           </div>
           <ul>
             <li>Pago único, sin suscripción automática</li>
@@ -124,4 +127,3 @@ export function PurchaseConsentExperience() {
     </main>
   );
 }
-

@@ -2,8 +2,13 @@ import { LegalDocument, LegalSection } from "@/components/legal-document";
 import {
   COURSE_ACCESS_MINIMUM_MONTHS,
   LEGAL_OWNER,
+  TERMS_LAST_UPDATED,
   TERMS_VERSION
 } from "@/lib/legal-config";
+import {
+  SUBASTASPRO_PRICE_EX_VAT,
+  SUBASTASPRO_PRICE_WITH_VAT_ES
+} from "@/lib/site-config";
 
 export const metadata = {
   title: "Condiciones de contratación",
@@ -27,6 +32,7 @@ export default function CondicionesPage() {
   return (
     <LegalDocument
       description={`Versión ${TERMS_VERSION}. Estas son las condiciones que se aceptan antes de continuar al checkout de Stripe.`}
+      lastUpdated={TERMS_LAST_UPDATED}
       title="Condiciones generales de contratación"
       toc={toc}
     >
@@ -53,12 +59,12 @@ export default function CondicionesPage() {
           mostrado antes de comprar forma parte de la información precontractual.
         </p>
         <p>
-          El precio comercial actual es 29 € más el IVA aplicable. Para España, con el
-          21 % actualmente configurado mediante Stripe Tax, el total es 35,09 € IVA
-          incluido. Las promociones o cupones pueden modificar el importe. El precio
-          final, impuestos y posibles descuentos se muestran en Stripe antes de pagar
-          y prevalecen para esa operación. El precio de 29 € no se garantiza de forma
-          permanente.
+          El precio comercial actual es {SUBASTASPRO_PRICE_EX_VAT} € más el IVA
+          aplicable. Para España, con el 21 % actualmente configurado mediante Stripe
+          Tax, el total es {SUBASTASPRO_PRICE_WITH_VAT_ES} € IVA incluido. Las
+          promociones o cupones pueden modificar el importe. El precio final,
+          impuestos y posibles descuentos se muestran en Stripe antes de pagar y
+          prevalecen para esa operación.
         </p>
         <p>El pago es único y no existe suscripción ni renovación automática.</p>
       </LegalSection>

@@ -1,6 +1,12 @@
 import { LEGAL_LAST_UPDATED, LEGAL_OWNER, LEGAL_ROUTES } from "@/lib/legal-config";
 
-export function LegalDocument({ children, description, title, toc }) {
+export function LegalDocument({
+  children,
+  description,
+  lastUpdated = LEGAL_LAST_UPDATED,
+  title,
+  toc
+}) {
   return (
     <main className="legal-page">
       <header className="legal-topbar">
@@ -29,7 +35,7 @@ export function LegalDocument({ children, description, title, toc }) {
             <p className="section-eyebrow">Información legal</p>
             <h1>{title}</h1>
             <p>{description}</p>
-            <span>Última actualización: {LEGAL_LAST_UPDATED}</span>
+            <span>Última actualización: {lastUpdated}</span>
           </header>
           {children}
           <nav className="legal-related" aria-label="Otras páginas legales">
@@ -71,4 +77,3 @@ export function LegalDataTable({ columns, rows }) {
     </div>
   );
 }
-
