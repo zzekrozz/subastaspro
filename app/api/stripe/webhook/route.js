@@ -327,7 +327,9 @@ export async function POST(request) {
     accessResult = await createCourseAccessForCheckout({
       email,
       stripeSessionId: sessionId,
-      stripeCustomerId: getCustomerId(session.customer)
+      stripeCustomerId: getCustomerId(session.customer),
+      googleSub: purchaseConsent?.googleSub || "",
+      googleEmail: purchaseConsent?.googleEmail || ""
     });
 
     logWebhook({

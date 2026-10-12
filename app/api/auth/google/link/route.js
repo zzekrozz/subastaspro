@@ -8,10 +8,10 @@ import {
 import { PRIVATE_ROUTE } from "@/lib/site-config";
 import {
   findActiveAccessByCode,
-  hasSupabaseAdminConfig,
+  hasAccessStoreConfig,
   linkAccessToGoogleIdentity,
   recordCourseAccess
-} from "@/lib/supabase-admin";
+} from "@/lib/course-access-repository";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,31 +43,36 @@ export async function POST(request) {
     return jsonResponse({ ok: false, message: "El código tiene este formato: SUBASTAS-XXXX-XXXX." }, 400);
   }
 
-  if (!hasSupabaseAdminConfig()) {
+  if (!hasAccessStoreConfig()) {
     return jsonResponse({ ok: false, message: "No se ha podido comprobar el código ahora mismo." }, 503);
   }
 
   try {
-    const { access, googleColumns } = await findActiveAccessByCode(code);
+    const access = await findActiveAccessByCode(code);
 
     if (!access) {
       return jsonResponse({ ok: false, message: INVALID_CODE }, 401);
     }
 
-    if (googleColumns) {
-      if (access.google_sub && access.google_sub !== pending.sub) {
+    if (access.google_sub && access.google_sub !== pending.sub) {
+      return jsonResponse(
+        { ok: false, message: "Este código ya está vinculado a otra cuenta de Google. Entra con esa cuenta o escríbenos por WhatsApp." },
+        409
+      );
+    }
+
+    if (!access.google_sub) {
+      const linked = await linkAccessToGoogleIdentity({ id: access.id, sub: pending.sub, email: pending.email });
+
+      if (!linked) {
         return jsonResponse(
-          { ok: false, message: "Este código ya está vinculado a otra cuenta de Google. Entra con esa cuenta o escríbenos por WhatsApp." },
+          { ok: false, message: "Tu cuenta de Google ya tiene otra compra vinculada. Entra con Google directamente o escríbenos por WhatsApp." },
           409
         );
       }
-
-      if (!access.google_sub) {
-        await linkAccessToGoogleIdentity({ id: access.id, sub: pending.sub, email: pending.email });
-      }
     }
 
-    await recordCourseAccess({ id: access.id, accessCount: access.access_count }).catch(() => false);
+    await recordCourseAccess(access.id).catch(() => false);
 
     return attachCourseSession(
       jsonResponse({ ok: true, redirectTo: PRIVATE_ROUTE }),

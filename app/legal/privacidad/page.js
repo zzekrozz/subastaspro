@@ -57,7 +57,7 @@ export default function PrivacidadPage() {
       <LegalSection id="proveedores" title="3. Destinatarios y proveedores">
         <ul>
           <li><strong>Stripe:</strong> checkout alojado, gestión del pago, impuestos y prevención del fraude. Los datos completos de tarjeta se introducen directamente en Stripe y no se almacenan en SubastasPro.</li>
-          <li><strong>Supabase:</strong> base de datos de accesos, estados de entrega y evidencias de consentimiento.</li>
+          <li><strong>Upstash (Redis):</strong> base de datos de accesos, estados de entrega y evidencias de consentimiento.</li>
           <li><strong>Resend:</strong> envío exclusivo de emails transaccionales con las credenciales.</li>
           <li><strong>Vercel:</strong> alojamiento, ejecución de la aplicación y registros técnicos necesarios.</li>
           <li><strong>Google (inicio de sesión):</strong> verifica tu identidad cuando eliges entrar con tu cuenta de Google. No recibimos tu contraseña.</li>
@@ -107,7 +107,7 @@ export default function PrivacidadPage() {
       <LegalSection id="seguridad" title="6. Seguridad, menores y cambios">
         <p>
           Se emplean controles server-side, cookies de sesión firmadas, validación de
-          firma y producto en Stripe, acceso administrativo a Supabase y minimización
+          firma y producto en Stripe, acceso administrativo restringido a la base de datos y minimización
           de logs. Ningún sistema es infalible; las medidas se revisarán en función del
           riesgo y la evolución técnica.
         </p>

@@ -5,7 +5,7 @@ import { CourseTopbar } from "@/components/course-topbar";
 import { courseModules, courseSections, getModulePath } from "@/lib/course-content";
 import { getCourseViewer } from "@/lib/course-session";
 import { PRIVATE_ROUTE } from "@/lib/site-config";
-import { listCourseAccessesForAdmin } from "@/lib/supabase-admin";
+import { listCourseAccessesForAdmin } from "@/lib/course-access-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +38,7 @@ export default async function AdminPage() {
 
   if (viewer.role !== "admin") notFound();
 
-  let listing = { configured: false, rows: [], googleColumns: false };
+  let listing = { configured: false, rows: [], reviews: [] };
   let failed = false;
 
   try {
@@ -61,8 +61,8 @@ export default async function AdminPage() {
         <div className="sp-frame">
           <h1>Alumnos y accesos</h1>
           <p>
-            Compras registradas en Supabase. Los códigos no se muestran aquí; cada alumno
-            los tiene en su email de compra.
+            Compras registradas en la base de datos (Upstash Redis). Los códigos no se
+            muestran aquí; cada alumno lo tiene en su email de compra.
           </p>
           <dl className="sp-admin-stats">
             <div>
@@ -71,7 +71,7 @@ export default async function AdminPage() {
             </div>
             <div>
               <dt>Vinculados a Google</dt>
-              <dd>{listing.googleColumns ? linked.length : "—"}</dd>
+              <dd>{linked.length}</dd>
             </div>
             <div>
               <dt>Entraron en 30 días</dt>
@@ -88,16 +88,17 @@ export default async function AdminPage() {
       <section className="sp-admin-body">
         <div className="sp-frame">
           {failed ? (
-            <p className="sp-admin-alert">No se ha podido leer Supabase. Revisa las variables NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY en Vercel.</p>
+            <p className="sp-admin-alert">No se ha podido leer la base de datos. Revisa en Vercel la conexión con Upstash Redis.</p>
           ) : null}
           {!failed && !listing.configured ? (
-            <p className="sp-admin-alert">Supabase no está configurado en este entorno, así que no hay alumnos que mostrar.</p>
+            <p className="sp-admin-alert">Falta conectar Upstash Redis a este proyecto en Vercel, así que todavía no hay alumnos que mostrar.</p>
           ) : null}
-          {!failed && listing.configured && !listing.googleColumns ? (
-            <p className="sp-admin-alert">
-              Falta ejecutar la migración <code>add_course_access_google_identity.sql</code>. Hasta
-              entonces los alumnos entran por email, pero no se puede vincular un código a otra cuenta de Google.
-            </p>
+          {listing.reviews?.length ? (
+            <div className="sp-admin-alert">
+              <strong>{listing.reviews.length} pago(s) pendientes de revisión manual.</strong> Stripe cobró pero no se
+              encontró el consentimiento de compra, así que no se creó el acceso. Sesiones:{" "}
+              {listing.reviews.map((review) => review.stripe_session_id).join(", ")}
+            </div>
           ) : null}
 
           {rows.length ? (

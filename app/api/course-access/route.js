@@ -10,10 +10,10 @@ import {
 } from "@/lib/course-session";
 import { isValidEmail, normalizeCourseAccessCredentials } from "@/lib/course-state";
 import {
-  hasSupabaseAdminConfig,
-  queryCourseAccessCode,
+  findActiveAccessByEmailAndCode,
+  hasAccessStoreConfig,
   recordCourseAccess
-} from "@/lib/supabase-admin";
+} from "@/lib/course-access-repository";
 
 const INVALID_ACCESS_MESSAGE = "El correo o el código de acceso no son correctos.";
 const INVALID_INPUT_MESSAGE =
@@ -47,7 +47,7 @@ export async function POST(request) {
     return jsonResponse({ valid: false, message: INVALID_INPUT_MESSAGE }, 400);
   }
 
-  if (!hasSupabaseAdminConfig()) {
+  if (!hasAccessStoreConfig()) {
     return jsonResponse({ valid: false, message: ACCESS_CHECK_ERROR_MESSAGE }, 500);
   }
 
@@ -57,17 +57,14 @@ export async function POST(request) {
   }
 
   try {
-    const accessCode = await queryCourseAccessCode(credentials);
+    const accessCode = await findActiveAccessByEmailAndCode(credentials);
 
     if (!accessCode) {
       return jsonResponse({ valid: false, message: INVALID_ACCESS_MESSAGE }, 401);
     }
 
     try {
-      await recordCourseAccess({
-        id: accessCode.id,
-        accessCount: accessCode.access_count
-      });
+      await recordCourseAccess(accessCode.id);
     } catch {}
 
     const response = jsonResponse({ valid: true }, 200);

@@ -19,10 +19,11 @@ import {
 import { PRIVATE_ROUTE } from "@/lib/site-config";
 import {
   findActiveAccessForGoogleIdentity,
-  hasSupabaseAdminConfig,
+  hasAccessStoreConfig,
   linkAccessToGoogleIdentity,
   recordCourseAccess
-} from "@/lib/supabase-admin";
+} from "@/lib/course-access-repository";
+import { consumeGoogleNonce } from "@/lib/google-nonce-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -65,6 +66,11 @@ export async function POST(request) {
     return jsonResponse({ ok: false, message: GENERIC_ERROR }, status);
   }
 
+  // Un mismo inicio de sesión de Google no se puede reutilizar.
+  if (!(await consumeGoogleNonce(nonceState.nonce))) {
+    return jsonResponse({ ok: false, message: "La sesión de acceso ha caducado. Recarga la página." }, 401);
+  }
+
   // 1. Administrador: entra gratis siempre.
   if (isAdminIdentity(identity, config)) {
     return attachCourseSession(
@@ -73,20 +79,20 @@ export async function POST(request) {
     );
   }
 
-  if (!hasSupabaseAdminConfig()) {
+  if (!hasAccessStoreConfig()) {
     return jsonResponse({ ok: false, message: "No se ha podido comprobar tu compra ahora mismo." }, 503);
   }
 
   // 2. Alumno con compra vinculada a su Google o hecha con el mismo email.
   try {
-    const { access, googleColumns } = await findActiveAccessForGoogleIdentity(identity);
+    const access = await findActiveAccessForGoogleIdentity(identity);
 
     if (access) {
-      if (googleColumns && !access.google_sub) {
+      if (!access.google_sub) {
         await linkAccessToGoogleIdentity({ id: access.id, sub: identity.sub, email: identity.email }).catch(() => false);
       }
 
-      await recordCourseAccess({ id: access.id, accessCount: access.access_count }).catch(() => false);
+      await recordCourseAccess(access.id).catch(() => false);
 
       return attachCourseSession(
         jsonResponse({ ok: true, role: "student", redirectTo: PRIVATE_ROUTE }),
