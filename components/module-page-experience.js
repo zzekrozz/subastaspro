@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { CourseImageBlock } from "@/components/course-image-block";
 import { CourseLearningVisual } from "@/components/course-learning-visuals";
-import { CourseLogoutButton } from "@/components/course-logout-button";
+import { CourseTopbar } from "@/components/course-topbar";
 import { ModuleVideoModal } from "@/components/module-video-modal";
 import { courseModules, courseSections, getModulePath } from "@/lib/course-content";
 import {
@@ -15,9 +15,7 @@ import {
   toggleCompletedModule
 } from "@/lib/course-state";
 import {
-  PDF_DOWNLOAD_PATH,
   PRIVATE_ROUTE,
-  SITE_NAME,
   WHATSAPP_SUPPORT_MESSAGE,
   buildWhatsAppUrl
 } from "@/lib/site-config";
@@ -99,7 +97,7 @@ function SectionVisuals({ visuals }) {
   );
 }
 
-export function ModulePageExperience({ module }) {
+export function ModulePageExperience({ module, viewer }) {
   const supportUrl = buildWhatsAppUrl(WHATSAPP_SUPPORT_MESSAGE);
   const [ready, setReady] = useState(false);
   const [completedModules, setCompletedModules] = useState([]);
@@ -118,6 +116,7 @@ export function ModulePageExperience({ module }) {
   const previousModule = moduleIndex > 0 ? courseModules[moduleIndex - 1] : null;
   const nextModule = moduleIndex < courseModules.length - 1 ? courseModules[moduleIndex + 1] : null;
   const courseSection = courseSections.find((section) => section.moduleIds.includes(module.id));
+  const tone = courseSection?.id || "final";
   const isCompleted = useMemo(
     () => completedModules.includes(module.id),
     [completedModules, module.id]
@@ -127,53 +126,29 @@ export function ModulePageExperience({ module }) {
     setCompletedModules((current) => toggleCompletedModule(module.id, current));
   }
 
-  if (!ready) {
-    return <main className="site-shell loading-shell">Preparando módulo...</main>;
-  }
-
   return (
-    <main className="site-shell module-page-shell course-module-page">
-      <header className="topbar course-topbar">
-        <Link className="course-brand" href={PRIVATE_ROUTE} aria-label="Volver al dashboard de SubastasPro">
-          <span>SP</span>
-          <div>
-            <strong>{SITE_NAME}</strong>
-            <small>Área privada</small>
-          </div>
-        </Link>
-        <div className="header-actions course-header-actions">
-          <Link className="button button-secondary button-small" href={PRIVATE_ROUTE}>
-            Volver al curso
-          </Link>
-          <a className="button button-secondary button-small" download href={PDF_DOWNLOAD_PATH}>
-            Checklist PDF
-          </a>
-          <a className="button button-primary button-small" href={supportUrl} rel="noreferrer" target="_blank">
-            Soporte
-          </a>
-          <CourseLogoutButton />
-        </div>
-      </header>
+    <main className={`sp sp-course sp-module is-${tone} module-page-shell course-module-page`}>
+      <CourseTopbar back={{ href: PRIVATE_ROUTE, label: "Todos los módulos" }} viewer={viewer} />
 
-      <section className={`module-hero ${module.platform ? `is-${module.platform.toLowerCase()}` : ""}`}>
-        <div className="content-frame module-hero-grid">
-          <div className="module-hero-copy">
-            <div className="module-breadcrumb">
-              <span>{courseSection ? `Bloque ${courseSection.number}` : "Aplicación"}</span>
-              <i aria-hidden="true" />
-              <span>Módulo {String(moduleIndex + 1).padStart(2, "0")}</span>
+      <section className="sp-mhero">
+        <div className="sp-frame sp-mhero-grid">
+          <div className="sp-mhero-copy">
+            <p className="sp-mhero-crumb">
+              <Link href={PRIVATE_ROUTE}>{courseSection ? `Bloque ${Number(courseSection.number)}: ${courseSection.title}` : "Checklist final"}</Link>
+            </p>
+            <div className="sp-mhero-title">
+              <span className="sp-mhero-num">{String(moduleIndex + 1).padStart(2, "0")}</span>
+              <h1>{module.title}</h1>
             </div>
-            <h1>{module.title}</h1>
-            <p className="lead">{module.summary}</p>
-            <div className="module-hero-chips">
-              <span className="pill">{module.duration}</span>
-              <span className="pill">{module.learning.length} objetivos</span>
-              {module.platform ? <span className="pill">{module.platform}</span> : null}
-            </div>
+            <p className="sp-mhero-lead">{module.summary}</p>
+            <p className="sp-mhero-meta">
+              {module.duration} de lectura, {module.learning.length} objetivos
+              {isCompleted ? ". Completado." : "."}
+            </p>
           </div>
 
-          <aside className="module-objectives-panel">
-            <p className="eyebrow-label">En este módulo</p>
+          <aside className="sp-mhero-goals">
+            <h2>Al terminar sabrás</h2>
             <ul>
               {module.learning.map((item) => (
                 <li key={item}>{item}</li>
@@ -182,20 +157,19 @@ export function ModulePageExperience({ module }) {
           </aside>
         </div>
         {courseSection?.independenceNote ? (
-          <div className="content-frame">
-            <p className="module-platform-notice">{courseSection.independenceNote}</p>
+          <div className="sp-frame">
+            <p className="sp-mhero-note">{courseSection.independenceNote}</p>
           </div>
         ) : null}
       </section>
 
-      <section className="section-block module-reading-section">
-        <div className="content-frame module-content-grid">
+      <section className="sp-mbody">
+        <div className="sp-frame module-content-grid sp-mbody-grid">
           <div className="module-longform">
             <ModuleVideoBlock module={module} />
             {module.sections.map((section, sectionIndex) => (
               <article className="module-section-card" key={`${section.title}-${sectionIndex}`}>
                 <header className="module-section-heading">
-                  <p>{String(sectionIndex + 1).padStart(2, "0")} · Contenido</p>
                   <h2>{section.title}</h2>
                 </header>
                 {section.paragraphs?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
@@ -219,51 +193,59 @@ export function ModulePageExperience({ module }) {
             ))}
           </div>
 
-          <aside className="module-sidebar">
-            <div className="module-sticky-card module-quote-card">
-              <p className="eyebrow-label">Idea para recordar</p>
+          <aside className="module-sidebar sp-mside">
+            <div className="sp-mside-card sp-mside-quote">
+              <h2>Para recordar</h2>
               <blockquote>{module.quote}</blockquote>
             </div>
-            <div className="module-sticky-card">
-              <p className="eyebrow-label">Checklist del módulo</p>
-              <ul className="inline-list module-sidebar-checklist">
+            <div className="sp-mside-card">
+              <h2>Checklist del módulo</h2>
+              <ul>
                 {module.miniChecklist.map((item) => <li key={item}>{item}</li>)}
               </ul>
             </div>
-            <div className={`module-sticky-card module-state-card ${isCompleted ? "is-complete" : ""}`}>
-              <p className="eyebrow-label">Tu progreso</p>
-              <strong>{isCompleted ? "Módulo completado" : "Módulo pendiente"}</strong>
-              <button className={`button ${isCompleted ? "button-secondary" : "button-primary"}`} onClick={handleToggleComplete} type="button">
+            <div className={`sp-mside-card sp-mside-state${isCompleted ? " is-done" : ""}`}>
+              <h2>{isCompleted ? "Módulo completado" : "¿Terminado?"}</h2>
+              <button
+                className={`sp-btn sp-btn-block ${isCompleted ? "sp-btn-line" : "sp-btn-primary"}`}
+                disabled={!ready}
+                onClick={handleToggleComplete}
+                type="button"
+              >
                 {isCompleted ? "Marcar como pendiente" : "Marcar como completado"}
               </button>
+              <a className="sp-mside-help" href={supportUrl} rel="noreferrer" target="_blank">
+                Preguntar una duda de este módulo
+              </a>
             </div>
           </aside>
         </div>
       </section>
 
-      <section className="section-block module-footer-block">
-        <div className="content-frame module-footer-card">
-          <div>
-            <p className="eyebrow-label">Navegación</p>
-            <strong>Módulo {moduleIndex + 1} de {courseModules.length}</strong>
-          </div>
-          <div className="module-footer-actions">
-            {previousModule ? (
-              <Link className="button button-secondary" href={getModulePath(previousModule.slug)}>
-                Módulo anterior
-              </Link>
-            ) : null}
-            <Link className="button button-secondary" href={PRIVATE_ROUTE}>
-              Ver dashboard
+      <nav className="sp-mnav" aria-label="Navegación entre módulos">
+        <div className="sp-frame sp-mnav-grid">
+          {previousModule ? (
+            <Link className="sp-mnav-link is-prev" href={getModulePath(previousModule.slug)}>
+              <span>Anterior</span>
+              <strong>{previousModule.title}</strong>
             </Link>
-            {nextModule ? (
-              <Link className="button button-primary" href={getModulePath(nextModule.slug)}>
-                Siguiente módulo
-              </Link>
-            ) : null}
-          </div>
+          ) : (
+            <span />
+          )}
+          <p className="sp-mnav-count">Módulo {moduleIndex + 1} de {courseModules.length}</p>
+          {nextModule ? (
+            <Link className="sp-mnav-link is-next" href={getModulePath(nextModule.slug)}>
+              <span>Siguiente</span>
+              <strong>{nextModule.title}</strong>
+            </Link>
+          ) : (
+            <Link className="sp-mnav-link is-next" href={PRIVATE_ROUTE}>
+              <span>Has llegado al final</span>
+              <strong>Volver al curso</strong>
+            </Link>
+          )}
         </div>
-      </section>
+      </nav>
     </main>
   );
 }

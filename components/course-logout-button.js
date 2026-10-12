@@ -13,22 +13,23 @@ export function CourseLogoutButton() {
     setIsLoggingOut(true);
 
     try {
-      await fetch("/api/course-logout", {
-        method: "POST"
-      });
+      await fetch("/api/course-logout", { method: "POST" });
     } finally {
+      try {
+        window.google?.accounts?.id?.disableAutoSelect?.();
+      } catch {}
       window.location.assign(PUBLIC_ROUTE);
     }
   }
 
   return (
     <button
-      className="button button-secondary button-small"
+      className="sp-btn sp-btn-ghost sp-btn-sm"
       disabled={isLoggingOut}
       onClick={logout}
       type="button"
     >
-      {isLoggingOut ? "Cerrando..." : "Cerrar sesión"}
+      {isLoggingOut ? "Saliendo…" : "Salir"}
     </button>
   );
 }
