@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { CourseLogoutButton } from "@/components/course-logout-button";
+import { CourseTopbar } from "@/components/course-topbar";
 import {
   courseMethodSteps,
   courseModules,
@@ -21,61 +21,58 @@ import {
 import {
   PDF_DOWNLOAD_PATH,
   PRINT_ROUTE,
-  SITE_NAME,
   WHATSAPP_SUPPORT_MESSAGE,
   buildWhatsAppUrl
 } from "@/lib/site-config";
 
 const moduleIds = courseModules.map((module) => module.id);
 
-function SectionProgress({ completedModules, modules }) {
-  const completed = modules.filter((module) => completedModules.includes(module.id)).length;
-  const percentage = Math.round((completed / modules.length) * 100);
-
-  return (
-    <div className="course-block-progress" aria-label={`${completed} de ${modules.length} módulos completados`}>
-      <div>
-        <strong>{completed}/{modules.length}</strong>
-        <span>{percentage}%</span>
-      </div>
-      <div className="course-progress-track" aria-hidden="true">
-        <span style={{ width: `${percentage}%` }} />
-      </div>
-    </div>
-  );
+function sectionFor(moduleId) {
+  return courseSections.find((section) => section.moduleIds.includes(moduleId));
 }
 
-function CourseModuleCard({ completedModules, module, moduleNumber, onToggle }) {
-  const done = completedModules.includes(module.id);
+function toneFor(moduleId) {
+  return sectionFor(moduleId)?.id || "final";
+}
 
+function numberFor(module) {
+  return String(courseModules.indexOf(module) + 1).padStart(2, "0");
+}
+
+function modulesOf(section) {
+  return section.moduleIds
+    .map((id) => courseModules.find((module) => module.id === id))
+    .filter(Boolean);
+}
+
+function ModuleRow({ done, module, onToggle }) {
   return (
-    <article className={`course-module-row ${done ? "is-complete" : ""}`}>
-      <div className="course-module-number">
-        <span>{String(moduleNumber).padStart(2, "0")}</span>
-        <small>{module.duration}</small>
-      </div>
-      <div className="course-module-copy">
-        <div className="course-module-title-line">
-          <h3>{module.title}</h3>
-          <span className={`course-status ${done ? "is-complete" : ""}`}>
-            {done ? "Completado" : "Pendiente"}
-          </span>
-        </div>
+    <li className={`sp-mrow${done ? " is-done" : ""}`}>
+      <span className="sp-mrow-num">{numberFor(module)}</span>
+      <div className="sp-mrow-copy">
+        <Link className="sp-mrow-title" href={getModulePath(module.slug)}>
+          {module.title}
+        </Link>
         <p>{module.summary}</p>
-        <div className="course-module-actions">
-          <Link className="button button-primary" href={getModulePath(module.slug)}>
-            Entrar al módulo
-          </Link>
-          <button className="button button-secondary" onClick={() => onToggle(module.id)} type="button">
-            {done ? "Marcar como pendiente" : "Marcar como completado"}
-          </button>
-        </div>
       </div>
-    </article>
+      <div className="sp-mrow-meta">
+        <small>{module.duration}</small>
+        <button
+          aria-label={done ? `Marcar ${module.title} como pendiente` : `Marcar ${module.title} como completado`}
+          aria-pressed={done}
+          className="sp-check"
+          onClick={() => onToggle(module.id)}
+          type="button"
+        >
+          <span aria-hidden="true" />
+          {done ? "Hecho" : "Pendiente"}
+        </button>
+      </div>
+    </li>
   );
 }
 
-export function CourseExperience() {
+export function CourseExperience({ viewer }) {
   const supportUrl = buildWhatsAppUrl(WHATSAPP_SUPPORT_MESSAGE);
   const [ready, setReady] = useState(false);
   const [completedModules, setCompletedModules] = useState([]);
@@ -91,213 +88,168 @@ export function CourseExperience() {
   }, [completedModules, ready]);
 
   const completedCount = completedModules.length;
-  const overallProgress = Math.round((completedCount / courseModules.length) * 100);
+  const percentage = Math.round((completedCount / courseModules.length) * 100);
   const continueModule = useMemo(
     () => getNextIncompleteModule(courseModules, completedModules) || courseModules.at(-1),
     [completedModules]
   );
+  const continueSection = sectionFor(continueModule.id);
   const finalModule = courseModules.find((module) => module.id === finalCourseModuleId);
+  const firstName = viewer?.name?.split(" ")[0] || "";
+  const allDone = completedCount === courseModules.length;
 
   function toggleModule(id) {
     setCompletedModules((current) => toggleCompletedModule(id, current));
   }
 
-  if (!ready) {
-    return <main className="site-shell loading-shell">Preparando SubastasPro...</main>;
-  }
-
   return (
-    <main className="site-shell course-dashboard-shell">
-      <header className="topbar course-topbar">
-        <Link className="course-brand" href="/curso" aria-label="Ir al dashboard de SubastasPro">
-          <span>SP</span>
-          <div>
-            <strong>{SITE_NAME}</strong>
-            <small>Área privada</small>
-          </div>
-        </Link>
-        <div className="header-actions course-header-actions">
-          <a className="button button-secondary button-small" download href={PDF_DOWNLOAD_PATH}>
-            Descargar checklist
-          </a>
-          <a className="button button-primary button-small" href={supportUrl} rel="noreferrer" target="_blank">
-            Soporte WhatsApp
-          </a>
-          <CourseLogoutButton />
-        </div>
-      </header>
+    <main className="sp sp-course">
+      <CourseTopbar viewer={viewer} />
 
-      <section className="course-dashboard-hero">
-        <div className="content-frame course-dashboard-hero-grid">
-          <div className="course-dashboard-intro">
-            <p className="course-kicker">Formación privada · Auto1 + Copart Alemania</p>
-            <h1>SubastasPro</h1>
-            <p className="course-dashboard-lead">
-              Aprende a buscar, analizar y completar una operación con un proceso claro,
-              desde la primera ficha hasta la revisión en campa.
+      <section className="sp-dash-hero">
+        <div className="sp-frame sp-dash-grid">
+          <div className="sp-dash-intro">
+            <h1>{firstName ? `Hola, ${firstName}.` : "Tu curso."}</h1>
+            <p>
+              {!ready
+                ? "Cargando tu progreso…"
+                : allDone
+                  ? "Has completado los 16 módulos. Usa el checklist final en cada operación."
+                  : completedCount
+                    ? `Llevas ${completedCount} de ${courseModules.length} módulos. Sigue donde lo dejaste.`
+                    : "Empieza por los fundamentos: son los que te ahorran los errores caros."}
             </p>
-            <div className="course-dashboard-actions">
-              <Link className="button button-primary" href={getModulePath(continueModule.slug)}>
-                {completedCount ? "Continuar el curso" : "Empezar el curso"}
-              </Link>
-              <a className="button button-secondary" href={PRINT_ROUTE}>
-                Abrir checklist final
-              </a>
-            </div>
-            <p className="course-next-module">
-              Siguiente: <strong>{continueModule.title}</strong>
-            </p>
-          </div>
 
-          <aside className="course-overall-progress">
-            <div className="course-progress-dial" style={{ "--course-progress": `${overallProgress * 3.6}deg` }}>
-              <div>
-                <strong>{overallProgress}%</strong>
-                <span>completado</span>
+            <div className="sp-progress" aria-label={`${completedCount} de ${courseModules.length} módulos completados`}>
+              <div className="sp-progress-head">
+                <strong>{percentage}%</strong>
+                <span>{completedCount}/{courseModules.length} módulos</span>
               </div>
+              <ol className="sp-progress-ticks">
+                {courseModules.map((module) => (
+                  <li
+                    className={`is-${toneFor(module.id)}${completedModules.includes(module.id) ? " is-done" : ""}${
+                      module.id === continueModule.id && !allDone ? " is-next" : ""
+                    }`}
+                    key={module.id}
+                    title={`${numberFor(module)} · ${module.title}`}
+                  />
+                ))}
+              </ol>
+              <ul className="sp-progress-legend">
+                {courseSections.map((section) => (
+                  <li className={`is-${section.id}`} key={section.id}>{section.title}</li>
+                ))}
+              </ul>
             </div>
-            <div>
-              <p>Progreso del curso</p>
-              <strong>{completedCount} de {courseModules.length} módulos</strong>
-              <span>Guardado en este navegador con la misma clave local existente.</span>
+          </div>
+
+          <Link className={`sp-next is-${continueSection?.id || "final"}`} href={getModulePath(continueModule.slug)}>
+            <div className="sp-next-head">
+              <span>{allDone ? "Repasar" : completedCount ? "Siguiente módulo" : "Primer módulo"}</span>
+              <span>{continueSection ? continueSection.title : "Checklist final"}</span>
             </div>
-          </aside>
+            <strong className="sp-next-num">{numberFor(continueModule)}</strong>
+            <h2>{continueModule.title}</h2>
+            <p>{continueModule.summary}</p>
+            <div className="sp-next-foot">
+              <span>{continueModule.duration}</span>
+              <span className="sp-btn sp-btn-primary sp-btn-sm">
+                {completedCount ? "Continuar" : "Empezar"}
+              </span>
+            </div>
+          </Link>
         </div>
       </section>
 
-      <section className="course-method-band">
-        <div className="content-frame">
-          <header className="course-band-heading">
-            <div>
-              <p className="course-kicker">Hilo conductor</p>
-              <h2>Método SubastasPro</h2>
-            </div>
-            <p>Un orden de trabajo para decidir con criterio, no una promesa de resultado.</p>
-          </header>
-          <ol className="course-method-steps">
-            {courseMethodSteps.map((step, index) => (
-              <li key={step}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{step}</strong>
-              </li>
+      <section className="sp-dash-method">
+        <div className="sp-frame">
+          <h2>El orden de trabajo en cada operación</h2>
+          <ol className="sp-method is-dark">
+            {courseMethodSteps.map((step) => (
+              <li key={step}>{step}</li>
             ))}
           </ol>
         </div>
       </section>
 
-      <section className="course-block-overview section-block">
-        <div className="content-frame">
-          <header className="course-section-heading">
-            <p className="course-kicker">Ruta completa</p>
-            <h2>Tres bloques, una forma de trabajar</h2>
-            <p>Empieza por los fundamentos, aplica el criterio en AUTO1 y entra en Copart con una gestión de riesgo más exigente.</p>
-          </header>
-          <div className="course-block-grid">
-            {courseSections.map((section) => {
-              const sectionModules = section.moduleIds
-                .map((id) => courseModules.find((module) => module.id === id))
-                .filter(Boolean);
+      <section className="sp-curriculum">
+        <div className="sp-frame">
+          {courseSections.map((section) => {
+            const modules = modulesOf(section);
+            const done = modules.filter((module) => completedModules.includes(module.id)).length;
 
-              return (
-                <article className={`course-block-card is-${section.id}`} key={section.id}>
-                  <div className="course-block-card-top">
-                    <span>{section.number}</span>
-                    <small>{section.code}</small>
+            return (
+              <section className={`sp-cblock is-${section.id}`} key={section.id}>
+                <header className="sp-cblock-head">
+                  <div>
+                    <span className="sp-cblock-kicker">Bloque {Number(section.number)}</span>
+                    <h2>{section.title}</h2>
+                    <p>{section.description}</p>
                   </div>
-                  <h3>{section.title}</h3>
-                  <p>{section.description}</p>
-                  <SectionProgress completedModules={completedModules} modules={sectionModules} />
-                </article>
-              );
-            })}
-          </div>
+                  <div className="sp-cblock-count" aria-label={`${done} de ${modules.length} completados`}>
+                    <strong>{done}/{modules.length}</strong>
+                    <span className="sp-cblock-bar" aria-hidden="true">
+                      <i style={{ width: `${Math.round((done / modules.length) * 100)}%` }} />
+                    </span>
+                  </div>
+                </header>
+                {section.independenceNote ? (
+                  <p className="sp-cblock-note">{section.independenceNote}</p>
+                ) : null}
+                <ol className="sp-mlist">
+                  {modules.map((module) => (
+                    <ModuleRow
+                      done={completedModules.includes(module.id)}
+                      key={module.id}
+                      module={module}
+                      onToggle={toggleModule}
+                    />
+                  ))}
+                </ol>
+              </section>
+            );
+          })}
+
+          {finalModule ? (
+            <section className="sp-cblock is-final">
+              <header className="sp-cblock-head">
+                <div>
+                  <span className="sp-cblock-kicker">Para cada operación</span>
+                  <h2>Checklist final</h2>
+                  <p>
+                    Ficha, coste, puja, papeles, pago y recogida en una sola hoja. Ábrela antes
+                    de cada compra.
+                  </p>
+                </div>
+                <div className="sp-cblock-links">
+                  <a className="sp-btn sp-btn-line sp-btn-sm" href={PRINT_ROUTE}>
+                    Versión imprimible
+                  </a>
+                  <a className="sp-btn sp-btn-ghost sp-btn-sm" download href={PDF_DOWNLOAD_PATH}>
+                    Descargar PDF
+                  </a>
+                </div>
+              </header>
+              <ol className="sp-mlist">
+                <ModuleRow
+                  done={completedModules.includes(finalModule.id)}
+                  module={finalModule}
+                  onToggle={toggleModule}
+                />
+              </ol>
+            </section>
+          ) : null}
         </div>
       </section>
 
-      <section className="course-curriculum section-block">
-        <div className="content-frame course-curriculum-inner">
-          <header className="course-section-heading">
-            <p className="course-kicker">Contenido</p>
-            <h2>Ruta de aprendizaje</h2>
-            <p>Los módulos mantienen su progreso individual. Puedes avanzar en orden o volver directamente a una consulta concreta.</p>
-          </header>
-
-          <div className="course-section-stack">
-            {courseSections.map((section) => {
-              const sectionModules = section.moduleIds
-                .map((id) => courseModules.find((module) => module.id === id))
-                .filter(Boolean);
-
-              return (
-                <section className={`course-curriculum-block is-${section.id}`} key={section.id}>
-                  <header className="course-curriculum-header">
-                    <div className="course-curriculum-code">
-                      <span>{section.number}</span>
-                      <small>{section.code}</small>
-                    </div>
-                    <div>
-                      <p>Bloque {section.number}</p>
-                      <h2>{section.title}</h2>
-                      <span>{section.description}</span>
-                    </div>
-                    <div className="course-curriculum-count">
-                      <strong>{sectionModules.length}</strong>
-                      <span>módulos</span>
-                    </div>
-                  </header>
-                  {section.independenceNote ? <p className="course-platform-notice">{section.independenceNote}</p> : null}
-                  <div className="course-module-list">
-                    {sectionModules.map((module) => (
-                      <CourseModuleCard
-                        completedModules={completedModules}
-                        key={module.id}
-                        module={module}
-                        moduleNumber={courseModules.indexOf(module) + 1}
-                        onToggle={toggleModule}
-                      />
-                    ))}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {finalModule ? (
-        <section className="course-final-resource section-block">
-          <div className="content-frame course-final-resource-grid">
-            <div>
-              <p className="course-kicker">Aplicación práctica</p>
-              <h2>Convierte el contenido en una rutina</h2>
-              <p>El checklist final reúne ficha, coste, puja, documentación, pago y recogida para volver a él en cada operación.</p>
-              <div className="course-dashboard-actions">
-                <Link className="button button-primary" href={getModulePath(finalModule.slug)}>
-                  Abrir módulo final
-                </Link>
-                <a className="button button-secondary" href={PRINT_ROUTE}>
-                  Versión imprimible
-                </a>
-              </div>
-            </div>
-            <CourseModuleCard
-              completedModules={completedModules}
-              module={finalModule}
-              moduleNumber={courseModules.indexOf(finalModule) + 1}
-              onToggle={toggleModule}
-            />
-          </div>
-        </section>
-      ) : null}
-
-      <footer className="course-support-footer">
-        <div className="content-frame">
+      <footer className="sp-support">
+        <div className="sp-frame sp-support-inner">
           <div>
-            <p className="course-kicker">Soporte</p>
-            <h2>¿Una duda concreta del contenido?</h2>
-            <p>Escribe indicando el módulo y el punto exacto que estás revisando.</p>
+            <h2>¿Una duda concreta?</h2>
+            <p>Escríbeme por WhatsApp indicando el módulo y el punto exacto que estás revisando.</p>
           </div>
-          <a className="button button-primary" href={supportUrl} rel="noreferrer" target="_blank">
+          <a className="sp-btn sp-btn-primary" href={supportUrl} rel="noreferrer" target="_blank">
             Abrir WhatsApp
           </a>
         </div>

@@ -39,6 +39,7 @@ export default function PrivacidadPage() {
             ["Compra y contratación", "Nombre y datos de facturación facilitados a Stripe, email, país, NIF/VAT si se aporta, identificadores Stripe, importe y estado del pago.", "Gestionar la compra, impuestos, prueba contractual y acceso al producto.", "Ejecución del contrato y cumplimiento de obligaciones legales, incluidas las fiscales y contables."],
             ["Consentimiento de compra", "UUID opaco, fecha y hora, versiones y hashes de los textos aceptados, estados de aceptación e identificador de sesión Stripe.", "Acreditar las condiciones aceptadas y la solicitud de suministro inmediato.", "Ejecución y prueba del contrato; cumplimiento de obligaciones de información y defensa frente a reclamaciones."],
             ["Acceso al curso", "Email, código personal, identificadores internos, estado, fecha del último acceso y contador de accesos.", "Autorizar el acceso, evitar usos abusivos y mantener la seguridad.", "Ejecución del contrato e interés legítimo en proteger el servicio."],
+            ["Acceso con Google", "Nombre, email verificado e identificador de tu cuenta de Google que Google nos facilita cuando eliges entrar con Google.", "Comprobar que tienes una compra activa, vincularla a tu cuenta y mantener tu sesión.", "Ejecución del contrato (prestación del acceso al curso)."],
             ["Email transaccional", "Email, código de acceso, estado de entrega e identificador técnico del proveedor.", "Enviar las credenciales y comunicaciones necesarias sobre la compra.", "Ejecución del contrato. No se usa para marketing."],
             ["Soporte", "Email o teléfono, contenido de la consulta y datos que decidas aportar.", "Resolver dudas, incidencias y reclamaciones.", "Ejecución del contrato, medidas precontractuales o interés legítimo en atender al usuario."],
             ["Seguridad técnica", "Identificadores de eventos y sesiones, estado técnico y registros mínimos de error. La infraestructura puede tratar datos de conexión para operar y proteger el servicio.", "Prevenir fraude, diagnosticar fallos y asegurar la plataforma.", "Interés legítimo y cumplimiento de obligaciones de seguridad."],
@@ -56,9 +57,10 @@ export default function PrivacidadPage() {
       <LegalSection id="proveedores" title="3. Destinatarios y proveedores">
         <ul>
           <li><strong>Stripe:</strong> checkout alojado, gestión del pago, impuestos y prevención del fraude. Los datos completos de tarjeta se introducen directamente en Stripe y no se almacenan en SubastasPro.</li>
-          <li><strong>Supabase:</strong> base de datos de accesos, estados de entrega y evidencias de consentimiento.</li>
+          <li><strong>Upstash (Redis):</strong> base de datos de accesos, estados de entrega y evidencias de consentimiento.</li>
           <li><strong>Resend:</strong> envío exclusivo de emails transaccionales con las credenciales.</li>
           <li><strong>Vercel:</strong> alojamiento, ejecución de la aplicación y registros técnicos necesarios.</li>
+          <li><strong>Google (inicio de sesión):</strong> verifica tu identidad cuando eliges entrar con tu cuenta de Google. No recibimos tu contraseña.</li>
           <li><strong>YouTube/Google:</strong> solo cuando permites contenido externo y se carga un reproductor.</li>
         </ul>
         <p>
@@ -105,7 +107,7 @@ export default function PrivacidadPage() {
       <LegalSection id="seguridad" title="6. Seguridad, menores y cambios">
         <p>
           Se emplean controles server-side, cookies de sesión firmadas, validación de
-          firma y producto en Stripe, acceso administrativo a Supabase y minimización
+          firma y producto en Stripe, acceso administrativo restringido a la base de datos y minimización
           de logs. Ningún sistema es infalible; las medidas se revisarán en función del
           riesgo y la evolución técnica.
         </p>

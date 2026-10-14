@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { COURSE_SESSION_COOKIE } from "@/lib/course-session-config";
-import { PUBLIC_ROUTE } from "@/lib/site-config";
+import { LOGIN_ROUTE } from "@/lib/site-config";
 
 function redirectToAccess(request, clearCookie = false) {
-  const response = NextResponse.redirect(new URL(PUBLIC_ROUTE, request.url));
+  const response = NextResponse.redirect(new URL(LOGIN_ROUTE, request.url));
 
   if (clearCookie) {
     response.cookies.set({

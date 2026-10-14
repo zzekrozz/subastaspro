@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { ModulePageExperience } from "@/components/module-page-experience";
 import { courseModules, getModuleBySlug } from "@/lib/course-content";
+import { getCourseViewer } from "@/lib/course-session";
 
 export function generateStaticParams() {
   return courseModules.map((module) => ({ slug: module.slug }));
@@ -25,5 +26,7 @@ export default async function CourseModulePage({ params }) {
 
   if (!module) notFound();
 
-  return <ModulePageExperience module={module} />;
+  const viewer = await getCourseViewer();
+
+  return <ModulePageExperience module={module} viewer={viewer} />;
 }

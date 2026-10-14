@@ -8,6 +8,7 @@ import {
   TERMS_VERSION,
   WITHDRAWAL_VERSION
 } from "@/lib/legal-config";
+import { GOOGLE_PENDING_COOKIE, readSignedValue } from "@/lib/google-auth-flow";
 import { createPurchaseConsent } from "@/lib/purchase-consent-repository";
 
 export const runtime = "nodejs";
@@ -97,6 +98,11 @@ export async function POST(request) {
   const id = randomUUID();
   const acceptedAt = new Date().toISOString();
 
+  // Si quien compra ya ha entrado con Google, la compra se vinculará a esa cuenta.
+  const pendingGoogle = readSignedValue("pending", request.cookies.get(GOOGLE_PENDING_COOKIE)?.value);
+  const googleSub = typeof pendingGoogle?.sub === "string" ? pendingGoogle.sub : "";
+  const googleEmail = typeof pendingGoogle?.email === "string" ? pendingGoogle.email : "";
+
   try {
     await createPurchaseConsent({
       id,
@@ -110,7 +116,8 @@ export async function POST(request) {
       immediate_access_requested: true,
       withdrawal_acknowledged: true,
       withdrawal_accepted_at: acceptedAt,
-      status: "pending"
+      status: "pending",
+      ...(googleSub ? { google_sub: googleSub, google_email: googleEmail } : {})
     });
 
     return jsonResponse({ purchaseConsentId: id }, 201);

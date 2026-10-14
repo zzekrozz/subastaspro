@@ -1,4 +1,8 @@
 import { CourseExperience } from "@/components/course-experience";
+import { getCourseViewer } from "@/lib/course-session";
+
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Área privada",
   robots: {
@@ -7,6 +11,8 @@ export const metadata = {
   }
 };
 
-export default function CoursePage() {
-  return <CourseExperience />;
+export default async function CoursePage() {
+  const viewer = await getCourseViewer();
+
+  return <CourseExperience viewer={viewer} />;
 }

@@ -1,4 +1,7 @@
+import "@fontsource-variable/big-shoulders-display";
+import "@fontsource-variable/hanken-grotesk";
 import "./globals.css";
+import "./subastaspro.css";
 
 import { CookieConsentProvider } from "@/components/cookie-consent-provider";
 import { LegalFooter } from "@/components/legal-footer";
@@ -17,6 +20,10 @@ export const metadata = {
       "Aprende a moverte en Auto1 y Copart Alemania con un enfoque práctico, directo y orientado a evitar errores.",
     type: "website"
   }
+};
+
+export const viewport = {
+  themeColor: "#101a23"
 };
 
 export default function RootLayout({ children }) {

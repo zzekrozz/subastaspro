@@ -349,14 +349,14 @@ export function PaymentSuccessExperience({
 
           <div className="payment-success-actions">
             {displayStatus === "missing" ? (
-              <ActionLink href="/antes-de-pujar#acceso" primary>
+              <ActionLink href="/entrar" primary>
                 Ir al área privada
               </ActionLink>
             ) : null}
 
             {displayStatus === "invalid" ? (
               <>
-                <ActionLink href="/antes-de-pujar#acceso" primary>
+                <ActionLink href="/entrar" primary>
                   Ir al área privada
                 </ActionLink>
                 <ActionLink href="/antes-de-pujar">Volver a SubastasPro</ActionLink>
@@ -429,7 +429,7 @@ export function PaymentSuccessExperience({
               </p>
             </div>
             <div className="payment-success-ready-action">
-              <ActionLink href="/antes-de-pujar" primary>
+              <ActionLink href="/entrar" primary>
                 Entrar a SubastasPro
               </ActionLink>
               <div className="payment-success-inbox-note">
@@ -505,7 +505,7 @@ export function PaymentSuccessExperience({
               </p>
             </div>
             <ul>
-              <li>Utiliza siempre el correo usado durante la compra.</li>
+              <li>Entra con la cuenta de Google del correo usado en la compra.</li>
               <li>Guarda el email con tu código.</li>
               <li>Tu progreso se conserva en este dispositivo.</li>
               <li>No necesitas volver a pagar para acceder de nuevo.</li>
