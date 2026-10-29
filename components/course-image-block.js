@@ -32,49 +32,38 @@ export function CourseImageBlock({
     };
   }, [open]);
 
-  const showPlaceholder = !src || failed;
+  // Si la imagen no existe o falla al cargar, no se muestra nada:
+  // el alumno nunca ve huecos ni avisos de "imagen pendiente".
+  if (!src || failed) return null;
 
   return (
     <>
-      <figure className={`course-image-card ${showPlaceholder ? "is-placeholder" : ""} ${blurSensitive ? "is-sensitive" : ""} ${layout}`}>
+      <figure className={`course-image-card ${blurSensitive ? "is-sensitive" : ""} ${layout}`}>
         <div className="course-image-frame">
           {label ? <span className="course-image-label">{label}</span> : null}
-
-          {showPlaceholder ? (
-            <div className="course-image-fallback">
-              <strong>Captura pendiente</strong>
-              <span>Cuando añadas esta imagen, aparecerá integrada aquí sin romper el módulo.</span>
-            </div>
-          ) : (
-            <button
-              className="course-image-trigger"
-              onClick={() => setOpen(true)}
-              type="button"
-            >
-              <img
-                alt={alt}
-                className="course-image"
-                loading="lazy"
-                onError={() => setFailed(true)}
-                src={src}
-              />
-            </button>
-          )}
+          <button
+            className="course-image-trigger"
+            onClick={() => setOpen(true)}
+            type="button"
+          >
+            <img
+              alt={alt}
+              className="course-image"
+              loading="lazy"
+              onError={() => setFailed(true)}
+              src={src}
+            />
+          </button>
         </div>
 
-        {(caption || blurSensitive) ? (
+        {caption ? (
           <figcaption className="course-image-caption">
-            {caption ? <span>{caption}</span> : null}
-            {blurSensitive ? (
-              <small>
-                Antes de subir capturas reales, tapa matrícula, bastidor, datos personales y cualquier información sensible.
-              </small>
-            ) : null}
+            <span>{caption}</span>
           </figcaption>
         ) : null}
       </figure>
 
-      {open && !showPlaceholder ? (
+      {open ? (
         <div
           aria-hidden="true"
           className="course-image-overlay"

@@ -280,7 +280,7 @@ export function LandingPage({ priceExVat, priceWithVatEs }) {
             <p className="sp-ticket-vat">{priceWithVatEs} € con IVA incluido en España</p>
             <ul>
               <li>16 módulos: fundamentos, Auto1 y Copart Alemania</li>
-              <li>Vídeos, herramientas y casos dentro del curso</li>
+              <li>Vídeos con pantalla real y esquemas de decisión</li>
               <li>Checklist descargable para cada operación</li>
               <li>Entras con tu cuenta de Google</li>
               <li>Acceso mínimo garantizado de 18 meses</li>

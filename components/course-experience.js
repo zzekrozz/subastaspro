@@ -58,14 +58,14 @@ function ModuleRow({ done, module, onToggle }) {
       <div className="sp-mrow-meta">
         <small>{module.duration}</small>
         <button
-          aria-label={done ? `Marcar ${module.title} como pendiente` : `Marcar ${module.title} como completado`}
+          aria-label={done ? `Marcar ${module.title} como no visto` : `Marcar ${module.title} como completado`}
           aria-pressed={done}
           className="sp-check"
           onClick={() => onToggle(module.id)}
           type="button"
         >
           <span aria-hidden="true" />
-          {done ? "Hecho" : "Pendiente"}
+          {done ? "Hecho" : "Por ver"}
         </button>
       </div>
     </li>

@@ -53,7 +53,7 @@ async function buildPdf() {
   y -= 10;
   y -= drawLines(page, wrapText("Checklist operativo antes de pujar", 42), { x: PAGE.marginX, y, font: bold, size: 23, lineHeight: 27 });
   y -= 8;
-  y -= drawLines(page, wrapText("Ficha, coste, puja, documentacion, pago y recogida en una sola rutina de comprobacion."), { x: PAGE.marginX, y, font: regular, size: 10.5, color: rgb(0.34, 0.33, 0.3) });
+  y -= drawLines(page, wrapText("Ficha, coste, puja, documentación, pago y recogida en una sola rutina de comprobación."), { x: PAGE.marginX, y, font: regular, size: 10.5, color: rgb(0.34, 0.33, 0.3) });
   y -= 18;
 
   for (const [groupIndex, group] of finalChecklistGroups.entries()) {

@@ -11,7 +11,7 @@ export function ModuleVideoModal({
   duration,
   videoUrl,
   youtubeId,
-  status = "coming-soon"
+  status = "ready"
 }) {
   const { allowExternalContent, externalContentAllowed } =
     useExternalContentConsent();
@@ -21,15 +21,17 @@ export function ModuleVideoModal({
     [isReady, videoUrl, youtubeId]
   );
 
+  if (!isReady) return null;
+
   return (
-    <div className={`module-video-card ${isReady ? "is-ready" : "is-soon"}`}>
+    <div className="module-video-card is-ready">
       <div className="module-video-copy">
         <span aria-hidden="true" className="module-video-icon">
-          {isReady ? "▶" : "○"}
+          ▶
         </span>
         <div>
           <p className="module-video-eyebrow">
-            {isReady ? "Explicación completa del módulo" : "Vídeo próximamente"}
+            Explicación completa del módulo
           </p>
           <h3>{title}</h3>
           {description ? <p>{description}</p> : null}
@@ -38,7 +40,7 @@ export function ModuleVideoModal({
 
       {duration ? <span className="pill module-video-duration">{duration}</span> : null}
 
-      {isReady && externalContentAllowed ? (
+      {externalContentAllowed ? (
         <div className="module-video-frame">
           <iframe
             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -49,7 +51,7 @@ export function ModuleVideoModal({
             title={title}
           />
         </div>
-      ) : isReady ? (
+      ) : (
         <div className="module-video-consent">
           <div>
             <strong>Contenido de YouTube</strong>
@@ -65,13 +67,6 @@ export function ModuleVideoModal({
           >
             Permitir y reproducir
           </button>
-        </div>
-      ) : (
-        <div className="module-video-actions">
-          <div className="module-video-soon-copy">
-            <strong>Vídeo próximamente</strong>
-            <span>Este módulo tendrá una explicación completa en pantalla real.</span>
-          </div>
         </div>
       )}
     </div>

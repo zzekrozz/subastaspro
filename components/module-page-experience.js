@@ -32,11 +32,12 @@ function ContentBlock({ label, text, tone }) {
 }
 
 function ModuleVideoBlock({ module }) {
-  const videos = module.videos?.length
+  const videos = (module.videos?.length
     ? module.videos
     : module.video
       ? [module.video]
-      : [];
+      : []
+  ).filter((video) => video?.status === "ready" && (video.videoUrl || video.youtubeId));
 
   if (!videos.length) return null;
 
@@ -212,7 +213,7 @@ export function ModulePageExperience({ module, viewer }) {
                 onClick={handleToggleComplete}
                 type="button"
               >
-                {isCompleted ? "Marcar como pendiente" : "Marcar como completado"}
+                {isCompleted ? "Desmarcar" : "Marcar como completado"}
               </button>
               <a className="sp-mside-help" href={supportUrl} rel="noreferrer" target="_blank">
                 Preguntar una duda de este módulo
