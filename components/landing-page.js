@@ -10,7 +10,7 @@ import {
   platforms,
   problemCards
 } from "@/lib/course-content";
-import { BRAND_NAME, LOGIN_ROUTE } from "@/lib/site-config";
+import { BRAND_NAME, LOGIN_ROUTE, auctionEligibilityNotice } from "@/lib/site-config";
 
 const PURCHASE_ROUTE = "/comprar";
 
@@ -96,6 +96,10 @@ export function LandingPage({ priceExVat, priceWithVatEs }) {
             <p className="sp-hero-price">
               Pago único de <strong>{priceExVat} € + IVA</strong> ({priceWithVatEs} € con IVA en
               España). Acceso mínimo de 18 meses.
+            </p>
+            <p className="sp-hero-notice">
+              <strong>Aviso:</strong> {auctionEligibilityNotice.short}{" "}
+              <a href="#requisitos">Más información</a>
             </p>
           </div>
           <LotSheet />
@@ -267,6 +271,10 @@ export function LandingPage({ priceExVat, priceWithVatEs }) {
               transporte que no habías contado) se come varias veces el precio de esta
               formación.
             </p>
+            <aside className="sp-eligibility" id="requisitos" aria-labelledby="requisitos-title">
+              <h3 id="requisitos-title">{auctionEligibilityNotice.title}</h3>
+              <p>{auctionEligibilityNotice.text}</p>
+            </aside>
           </div>
           <div className="sp-ticket">
             <div className="sp-ticket-head">

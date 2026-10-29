@@ -266,6 +266,26 @@ body {
   color: var(--sp-luz);
 }
 
+.sp-hero-notice {
+  margin-top: 14px;
+  padding-left: 12px;
+  border-left: 3px solid var(--sp-marcador);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--sp-luz-2);
+  max-width: 32rem;
+}
+
+.sp-hero-notice strong {
+  color: var(--sp-marcador);
+}
+
+.sp-hero-notice a {
+  color: var(--sp-luz);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ---- Ficha de lote -------------------------------------------------------- */
 
 .lot {
@@ -938,6 +958,35 @@ body {
   font-size: 1.125rem;
   color: var(--sp-luz-2);
   max-width: 32rem;
+}
+
+.sp-eligibility {
+  margin-top: 28px;
+  padding: 20px 22px;
+  max-width: 32rem;
+  border: 1px solid rgba(244, 203, 69, 0.45);
+  border-left-width: 4px;
+  border-left-color: var(--sp-marcador);
+  border-radius: 10px;
+  background: rgba(244, 203, 69, 0.07);
+  scroll-margin-top: 96px;
+}
+
+.sp-eligibility h3 {
+  margin: 0;
+  font-family: var(--sp-text);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--sp-marcador);
+}
+
+.sp-price-copy .sp-eligibility p {
+  margin-top: 8px;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--sp-luz);
 }
 
 .sp-ticket {

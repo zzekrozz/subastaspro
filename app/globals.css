@@ -5950,3 +5950,13 @@ summary:hover {
     font-size: 3.6rem;
   }
 }
+
+.purchase-eligibility-note {
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  border-left: 4px solid #f4cb45;
+  border-radius: 8px;
+  background: rgba(244, 203, 69, 0.1);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}

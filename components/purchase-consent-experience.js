@@ -6,7 +6,8 @@ import { LEGAL_ACCEPTANCE_TEXTS, LEGAL_ROUTES } from "@/lib/legal-config";
 import { buildPurchaseCheckoutUrl } from "@/lib/purchase-consent-core";
 import {
   SUBASTASPRO_PRICE_EX_VAT,
-  SUBASTASPRO_PRICE_WITH_VAT_ES
+  SUBASTASPRO_PRICE_WITH_VAT_ES,
+  auctionEligibilityNotice
 } from "@/lib/site-config";
 
 export function PurchaseConsentExperience({ paymentLink }) {
@@ -75,6 +76,9 @@ export function PurchaseConsentExperience({ paymentLink }) {
             <li>Acceso personal mediante email y código</li>
             <li>Checkout alojado y protegido por Stripe</li>
           </ul>
+          <p className="purchase-eligibility-note">
+            <strong>{auctionEligibilityNotice.title}.</strong> {auctionEligibilityNotice.text}
+          </p>
         </div>
 
         <form className="purchase-consent-form" onSubmit={handleSubmit}>
